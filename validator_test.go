@@ -13487,3 +13487,119 @@ func TestNestedStructValidation(t *testing.T) {
 		})
 	}
 }
+
+type Value struct {
+	Street string `validate:"required"`
+	City   string `validate:"required"`
+}
+
+func TestFailFastSettingStruct(t *testing.T) {
+
+	tests := []struct {
+		v              Value
+		failFast       bool
+		expectedErrLen int
+	}{
+		{
+			v: Value{
+				Street: "",
+				City:   "",
+			},
+			failFast:       true,
+			expectedErrLen: 1,
+		},
+		{
+			v: Value{
+				Street: "",
+				City:   "",
+			},
+			failFast:       false,
+			expectedErrLen: 2,
+		},
+	}
+
+	for _, t := range tests {
+		validate := New()
+		if t.failFast {
+			validate.FailFast()
+		}
+		errs := validate.Struct(t.v)
+
+		validationErrs := errs.(ValidationErrors)
+		IsEqual(len(validationErrs), t.expectedErrLen)
+	}
+}
+
+func TestFailFastSettingStructPartialCtx(t *testing.T) {
+
+	tests := []struct {
+		v              Value
+		failFast       bool
+		expectedErrLen int
+	}{
+		{
+			v: Value{
+				Street: "",
+				City:   "",
+			},
+			failFast:       true,
+			expectedErrLen: 1,
+		},
+		{
+			v: Value{
+				Street: "",
+				City:   "",
+			},
+			failFast:       false,
+			expectedErrLen: 2,
+		},
+	}
+
+	for _, t := range tests {
+		validate := New()
+		if t.failFast {
+			validate.FailFast()
+		}
+		errs := validate.StructPartialCtx(context.TODO(), t.v, "Street", "City")
+
+		validationErrs := errs.(ValidationErrors)
+		IsEqual(len(validationErrs), t.expectedErrLen)
+	}
+}
+
+func TestFailFastSettingStructExceptCtx(t *testing.T) {
+
+	tests := []struct {
+		v              Value
+		failFast       bool
+		expectedErrLen int
+	}{
+		{
+			v: Value{
+				Street: "",
+				City:   "",
+			},
+			failFast:       true,
+			expectedErrLen: 1,
+		},
+		{
+			v: Value{
+				Street: "",
+				City:   "",
+			},
+			failFast:       false,
+			expectedErrLen: 2,
+		},
+	}
+
+	for _, t := range tests {
+		validate := New()
+		if t.failFast {
+			validate.FailFast()
+		}
+		errs := validate.StructPartialCtx(context.TODO(), t.v, "Street", "City")
+
+		validationErrs := errs.(ValidationErrors)
+		IsEqual(len(validationErrs), t.expectedErrLen)
+	}
+}

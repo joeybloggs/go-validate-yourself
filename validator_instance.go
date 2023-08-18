@@ -83,6 +83,7 @@ type Validate struct {
 	pool             *sync.Pool
 	hasCustomFuncs   bool
 	hasTagNameFunc   bool
+	isFailFast       bool
 	tagNameFunc      TagNameFunc
 	structLevelFuncs map[reflect.Type]StructLevelFuncCtx
 	customFuncs      map[reflect.Type]CustomTypeFunc
@@ -147,6 +148,11 @@ func New() *Validate {
 	}
 
 	return v
+}
+
+// FailFast sets the error response to return the first validation error encountered
+func (v *Validate) FailFast() {
+	v.isFailFast = true
 }
 
 // SetTagName allows for changing of the default tag name of 'validate'
@@ -384,6 +390,7 @@ func (v *Validate) StructCtx(ctx context.Context, s interface{}) (err error) {
 	vd := v.pool.Get().(*validate)
 	vd.top = top
 	vd.isPartial = false
+	vd.isFailFast = v.isFailFast
 	// vd.hasExcludes = false // only need to reset in StructPartial and StructExcept
 
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
@@ -430,6 +437,7 @@ func (v *Validate) StructFilteredCtx(ctx context.Context, s interface{}, fn Filt
 	vd.top = top
 	vd.isPartial = true
 	vd.ffn = fn
+	vd.isFailFast = v.isFailFast
 	// vd.hasExcludes = false // only need to reset in StructPartial and StructExcept
 
 	vd.validateStruct(ctx, top, val, val.Type(), vd.ns[0:0], vd.actualNs[0:0], nil)
@@ -480,6 +488,7 @@ func (v *Validate) StructPartialCtx(ctx context.Context, s interface{}, fields .
 	vd.ffn = nil
 	vd.hasExcludes = false
 	vd.includeExclude = make(map[string]struct{})
+	vd.isFailFast = v.isFailFast
 
 	typ := val.Type()
 	name := typ.Name()
@@ -570,6 +579,7 @@ func (v *Validate) StructExceptCtx(ctx context.Context, s interface{}, fields ..
 	vd.ffn = nil
 	vd.hasExcludes = true
 	vd.includeExclude = make(map[string]struct{})
+	vd.isFailFast = v.isFailFast
 
 	typ := val.Type()
 	name := typ.Name()
@@ -641,6 +651,7 @@ func (v *Validate) VarCtx(ctx context.Context, field interface{}, tag string) (e
 	vd := v.pool.Get().(*validate)
 	vd.top = val
 	vd.isPartial = false
+	vd.isFailFast = v.isFailFast
 	vd.traverseField(ctx, val, val, vd.ns[0:0], vd.actualNs[0:0], defaultCField, ctag)
 
 	if len(vd.errs) > 0 {
@@ -693,6 +704,7 @@ func (v *Validate) VarWithValueCtx(ctx context.Context, field interface{}, other
 	vd := v.pool.Get().(*validate)
 	vd.top = otherVal
 	vd.isPartial = false
+	vd.isFailFast = v.isFailFast
 	vd.traverseField(ctx, otherVal, reflect.ValueOf(field), vd.ns[0:0], vd.actualNs[0:0], defaultCField, ctag)
 
 	if len(vd.errs) > 0 {

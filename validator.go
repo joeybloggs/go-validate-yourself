@@ -27,6 +27,7 @@ type validate struct {
 	fldIsPointer   bool          // StructLevel & FieldLevel
 	isPartial      bool
 	hasExcludes    bool
+	isFailFast     bool // Returns on first error encountered
 }
 
 // parent and current will be the same the first run of validateStruct
@@ -75,6 +76,10 @@ func (v *validate) validateStruct(ctx context.Context, parent reflect.Value, cur
 			}
 
 			v.traverseField(ctx, current, current.Field(f.idx), ns, structNs, f, f.cTags)
+
+			if v.isFailFast && len(v.errs) > 0 {
+				return
+			}
 		}
 	}
 
