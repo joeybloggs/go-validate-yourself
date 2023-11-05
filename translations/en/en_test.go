@@ -152,10 +152,12 @@ func TestTranslations(t *testing.T) {
 		Datetime          string            `validate:"datetime=2006-01-02"`
 		PostCode          string            `validate:"postcode_iso3166_alpha2=SG"`
 		PostCodeCountry   string
-		PostCodeByField   string `validate:"postcode_iso3166_alpha2_field=PostCodeCountry"`
-		BooleanString     string `validate:"boolean"`
-		Image             string `validate:"image"`
-		CveString         string `validate:"cve"`
+		PostCodeByField   string        `validate:"postcode_iso3166_alpha2_field=PostCodeCountry"`
+		BooleanString     string        `validate:"boolean"`
+		Image             string        `validate:"image"`
+		CveString         string        `validate:"cve"`
+		MinDuration       time.Duration `validate:"min=1h30m,max=2h"`
+		MaxDuration       time.Duration `validate:"min=1h30m,max=2h"`
 	}
 
 	var test Test
@@ -210,6 +212,9 @@ func TestTranslations(t *testing.T) {
 	test.Datetime = "2008-Feb-01"
 	test.BooleanString = "A"
 	test.CveString = "A"
+
+	test.MinDuration = 1 * time.Hour
+	test.MaxDuration = 3 * time.Hour
 
 	test.Inner.RequiredIf = "abcd"
 
@@ -710,6 +715,14 @@ func TestTranslations(t *testing.T) {
 		{
 			ns:       "Test.CveString",
 			expected: "CveString must be a valid cve identifier",
+		},
+		{
+			ns:       "Test.MinDuration",
+			expected: "MinDuration must be 1h30m or greater",
+		},
+		{
+			ns:       "Test.MaxDuration",
+			expected: "MaxDuration must be 2h or less",
 		},
 	}
 
