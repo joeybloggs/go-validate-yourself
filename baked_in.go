@@ -1453,33 +1453,37 @@ func isFileURL(path string) bool {
 // isURL is the validation function for validating if the current field's value is a valid URL.
 func isURL(fl FieldLevel) bool {
 	field := fl.Field()
+	var s string
 
 	switch field.Kind() {
 	case reflect.String:
-
-		s := strings.ToLower(field.String())
-
-		if len(s) == 0 {
-			return false
+		s = strings.ToLower(field.String())
+	default:
+		if stringer, ok := field.Interface().(fmt.Stringer); ok {
+			s = stringer.String()
+		} else {
+			panic(fmt.Sprintf("Bad field type %T", field.Interface()))
 		}
+	}
 
-		if isFileURL(s) {
-			return true
-		}
+	if len(s) == 0 {
+		return false
+	}
 
-		url, err := url.Parse(s)
-		if err != nil || url.Scheme == "" {
-			return false
-		}
-
-		if url.Host == "" && url.Fragment == "" && url.Opaque == "" {
-			return false
-		}
-
+	if isFileURL(s) {
 		return true
 	}
 
-	panic(fmt.Sprintf("Bad field type %T", field.Interface()))
+	url, err := url.Parse(s)
+	if err != nil || url.Scheme == "" {
+		return false
+	}
+
+	if url.Host == "" && url.Fragment == "" && url.Opaque == "" {
+		return false
+	}
+
+	return true
 }
 
 // isHttpURL is the validation function for validating if the current field's value is a valid HTTP(s) URL.
@@ -1489,20 +1493,24 @@ func isHttpURL(fl FieldLevel) bool {
 	}
 
 	field := fl.Field()
+	var s string
 	switch field.Kind() {
 	case reflect.String:
-
-		s := strings.ToLower(field.String())
-
-		url, err := url.Parse(s)
-		if err != nil || url.Host == "" {
-			return false
+		s = strings.ToLower(field.String())
+	default:
+		if stringer, ok := fl.Field().Interface().(fmt.Stringer); ok {
+			s = stringer.String()
+		} else {
+			panic(fmt.Sprintf("Bad field type %T", field.Interface()))
 		}
-
-		return url.Scheme == "http" || url.Scheme == "https"
 	}
 
-	panic(fmt.Sprintf("Bad field type %T", field.Interface()))
+	url, err := url.Parse(s)
+	if err != nil || url.Host == "" {
+		return false
+	}
+
+	return url.Scheme == "http" || url.Scheme == "https"
 }
 
 // isUrnRFC2141 is the validation function for validating if the current field's value is a valid URN as per RFC 2141.

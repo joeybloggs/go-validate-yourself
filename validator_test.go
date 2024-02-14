@@ -11,6 +11,7 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -8134,59 +8135,70 @@ func TestUrnRFC2141(t *testing.T) {
 	PanicMatches(t, func() { _ = validate.Var(i, tag) }, "Bad field type int")
 }
 
+type Stringer string
+
+func (s Stringer) String() string {
+    return string(s)
+}
+
 func TestUrl(t *testing.T) {
 	tests := []struct {
-		param    string
+		param    fmt.Stringer
 		expected bool
 	}{
-		{"http://foo.bar#com", true},
-		{"http://foobar.com", true},
-		{"https://foobar.com", true},
-		{"foobar.com", false},
-		{"http://foobar.coffee/", true},
-		{"http://foobar.中文网/", true},
-		{"http://foobar.org/", true},
-		{"http://foobar.org:8080/", true},
-		{"ftp://foobar.ru/", true},
-		{"http://user:pass@www.foobar.com/", true},
-		{"http://127.0.0.1/", true},
-		{"http://duckduckgo.com/?q=%2F", true},
-		{"http://localhost:3000/", true},
-		{"http://foobar.com/?foo=bar#baz=qux", true},
-		{"http://foobar.com?foo=bar", true},
-		{"http://www.xn--froschgrn-x9a.net/", true},
-		{"", false},
-		{"xyz://foobar.com", true},
-		{"invalid.", false},
-		{".com", false},
-		{"rtmp://foobar.com", true},
-		{"http://www.foo_bar.com/", true},
-		{"http://localhost:3000/", true},
-		{"http://foobar.com/#baz", true},
-		{"http://foobar.com#baz=qux", true},
-		{"http://foobar.com/t$-_.+!*\\'(),", true},
-		{"http://www.foobar.com/~foobar", true},
-		{"http://www.-foobar.com/", true},
-		{"http://www.foo---bar.com/", true},
-		{"mailto:someone@example.com", true},
-		{"irc://irc.server.org/channel", true},
-		{"irc://#channel@network", true},
-		{"/abs/test/dir", false},
-		{"./rel/test/dir", false},
-		{"irc:", false},
-		{"http://", false},
-		{"file://path/to/file.txt", true},
-		{"file:///c:/Windows/file.txt", true},
-		{"file://localhost/path/to/file.txt", true},
-		{"file://localhost/c:/WINDOWS/file.txt", true},
-		{"file://", true},
-		{"file:////remotehost/path/file.txt", true},
+		{Stringer("http://foo.bar#com"), true},
+		{Stringer("http://foobar.com"), true},
+		{Stringer("https://foobar.com"), true},
+		{Stringer("foobar.com"), false},
+		{Stringer("http://foobar.coffee/"), true},
+		{Stringer("http://foobar.中文网/"), true},
+		{Stringer("http://foobar.org/"), true},
+		{Stringer("http://foobar.org:8080/"), true},
+		{Stringer("ftp://foobar.ru/"), true},
+		{Stringer("http://user:pass@www.foobar.com/"), true},
+		{Stringer("http://127.0.0.1/"), true},
+		{Stringer("http://duckduckgo.com/?q=%2F"), true},
+		{Stringer("http://localhost:3000/"), true},
+		{Stringer("http://foobar.com/?foo=bar#baz=qux"), true},
+		{Stringer("http://foobar.com?foo=bar"), true},
+		{Stringer("http://www.xn--froschgrn-x9a.net/"), true},
+		{Stringer(""), false},
+		{Stringer("xyz://foobar.com"), true},
+		{Stringer("invalid."), false},
+		{Stringer(".com"), false},
+		{Stringer("rtmp://foobar.com"), true},
+		{Stringer("http://www.foo_bar.com/"), true},
+		{Stringer("http://localhost:3000/"), true},
+		{Stringer("http://foobar.com/#baz"), true},
+		{Stringer("http://foobar.com#baz=qux"), true},
+		{Stringer("http://foobar.com/t$-_.+!*\\'(),"), true},
+		{Stringer("http://www.foobar.com/~foobar"), true},
+		{Stringer("http://www.-foobar.com/"), true},
+		{Stringer("http://www.foo---bar.com/"), true},
+		{Stringer("mailto:someone@example.com"), true},
+		{Stringer("irc://irc.server.org/channel"), true},
+		{Stringer("irc://#channel@network"), true},
+		{Stringer("/abs/test/dir"), false},
+		{Stringer("./rel/test/dir"), false},
+		{Stringer("irc:"), false},
+		{Stringer("http://"), false},
+		{Stringer("file://path/to/file.txt"), true},
+		{Stringer("file:///c:/Windows/file.txt"), true},
+		{Stringer("file://localhost/path/to/file.txt"), true},
+		{Stringer("file://localhost/c:/WINDOWS/file.txt"), true},
+		{Stringer("file://"), true},
+		{Stringer("file:////remotehost/path/file.txt"), true},
+		{&url.URL{Scheme: "https", Host: "foobar.com"}, true},
+		{&url.URL{Scheme: "file"}, true},
+		{&url.URL{Scheme: "file"}, true},
+		{&url.URL{Scheme: "file", Path: "/"}, true},
+		{&url.URL{Host: "foobar.com"}, false},
+		{&url.URL{}, false},
 	}
 
 	validate := New()
 
 	for i, test := range tests {
-
 		errs := validate.Var(test.param, "url")
 
 		if test.expected {
@@ -8211,51 +8223,57 @@ func TestUrl(t *testing.T) {
 
 func TestHttpUrl(t *testing.T) {
 	tests := []struct {
-		param    string
+		param    fmt.Stringer
 		expected bool
 	}{
-		{"http://foo.bar#com", true},
-		{"http://foobar.com", true},
-		{"HTTP://foobar.com", true},
-		{"https://foobar.com", true},
-		{"foobar.com", false},
-		{"http://foobar.coffee/", true},
-		{"http://foobar.中文网/", true},
-		{"http://foobar.org/", true},
-		{"http://foobar.org:8080/", true},
-		{"ftp://foobar.ru/", false},
-		{"file:///etc/passwd", false},
-		{"file://C:/windows/win.ini", false},
-		{"http://user:pass@www.foobar.com/", true},
-		{"http://127.0.0.1/", true},
-		{"http://duckduckgo.com/?q=%2F", true},
-		{"http://localhost:3000/", true},
-		{"http://foobar.com/?foo=bar#baz=qux", true},
-		{"http://foobar.com?foo=bar", true},
-		{"http://www.xn--froschgrn-x9a.net/", true},
-		{"", false},
-		{"a://b", false},
-		{"xyz://foobar.com", false},
-		{"invalid.", false},
-		{".com", false},
-		{"rtmp://foobar.com", false},
-		{"http://www.foo_bar.com/", true},
-		{"http://localhost:3000/", true},
-		{"http://foobar.com/#baz", true},
-		{"http://foobar.com#baz=qux", true},
-		{"http://foobar.com/t$-_.+!*\\'(),", true},
-		{"http://www.foobar.com/~foobar", true},
-		{"http://www.-foobar.com/", true},
-		{"http://www.foo---bar.com/", true},
-		{"mailto:someone@example.com", false},
-		{"irc://irc.server.org/channel", false},
-		{"irc://#channel@network", false},
-		{"/abs/test/dir", false},
-		{"./rel/test/dir", false},
-		{"http:", false},
-		{"http://", false},
-		{"http://#invalid", false},
-		{"https://1.1.1.1", true},
+		{Stringer("http://foo.bar#com"), true},
+		{Stringer("http://foobar.com"), true},
+		{Stringer("HTTP://foobar.com"), true},
+		{Stringer("https://foobar.com"), true},
+		{Stringer("foobar.com"), false},
+		{Stringer("http://foobar.coffee/"), true},
+		{Stringer("http://foobar.中文网/"), true},
+		{Stringer("http://foobar.org/"), true},
+		{Stringer("http://foobar.org:8080/"), true},
+		{Stringer("ftp://foobar.ru/"), false},
+		{Stringer("file:///etc/passwd"), false},
+		{Stringer("file://C:/windows/win.ini"), false},
+		{Stringer("http://user:pass@www.foobar.com/"), true},
+		{Stringer("http://127.0.0.1/"), true},
+		{Stringer("http://duckduckgo.com/?q=%2F"), true},
+		{Stringer("http://localhost:3000/"), true},
+		{Stringer("http://foobar.com/?foo=bar#baz=qux"), true},
+		{Stringer("http://foobar.com?foo=bar"), true},
+		{Stringer("http://www.xn--froschgrn-x9a.net/"), true},
+		{Stringer(""), false},
+		{Stringer("a://b"), false},
+		{Stringer("xyz://foobar.com"), false},
+		{Stringer("invalid."), false},
+		{Stringer(".com"), false},
+		{Stringer("rtmp://foobar.com"), false},
+		{Stringer("http://www.foo_bar.com/"), true},
+		{Stringer("http://localhost:3000/"), true},
+		{Stringer("http://foobar.com/#baz"), true},
+		{Stringer("http://foobar.com#baz=qux"), true},
+		{Stringer("http://foobar.com/t$-_.+!*\\'(),"), true},
+		{Stringer("http://www.foobar.com/~foobar"), true},
+		{Stringer("http://www.-foobar.com/"), true},
+		{Stringer("http://www.foo---bar.com/"), true},
+		{Stringer("mailto:someone@example.com"), false},
+		{Stringer("irc://irc.server.org/channel"), false},
+		{Stringer("irc://#channel@network"), false},
+		{Stringer("/abs/test/dir"), false},
+		{Stringer("./rel/test/dir"), false},
+		{Stringer("http:"), false},
+		{Stringer("http://"), false},
+		{Stringer("http://#invalid"), false},
+		{Stringer("https://1.1.1.1"), true},
+
+		{&url.URL{Scheme: "https", Host: "foobar.com"}, true},
+		{&url.URL{Scheme: "file"}, false},
+		{&url.URL{Scheme: "file", Path: "/"}, false},
+		{&url.URL{Host: "foobar.com"}, false},
+		{&url.URL{}, false},
 	}
 
 	validate := New()
