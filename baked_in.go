@@ -2907,6 +2907,12 @@ func isCveFormat(fl FieldLevel) bool {
 // a valid dns RFC 1035 label, defined in RFC 1035.
 func isDnsRFC1035LabelFormat(fl FieldLevel) bool {
 	val := fl.Field().String()
+
+	size := len(val)
+	if size > 63 {
+		return false
+	}
+
 	return dnsRegexRFC1035Label.MatchString(val)
 }
 

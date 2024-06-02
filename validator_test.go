@@ -13122,6 +13122,8 @@ func TestRFC1035LabelFormatValidation(t *testing.T) {
 		{"ABC-ABC", "dns_rfc1035_label", false},
 		{"123-abc", "dns_rfc1035_label", false},
 		{"", "dns_rfc1035_label", false},
+		{"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijk", "dns_rfc1035_label", true},
+		{"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl", "dns_rfc1035_label", false},
 	}
 
 	validate := New()
