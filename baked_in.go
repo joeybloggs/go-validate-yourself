@@ -50,6 +50,7 @@ var (
 		keysTag:           {},
 		endKeysTag:        {},
 		structOnlyTag:     {},
+		omitzero:          {},
 		omitempty:         {},
 		omitnil:           {},
 		skipValidationTag: {},
@@ -1791,6 +1792,20 @@ func hasValue(fl FieldLevel) bool {
 	default:
 		if fl.(*validate).fldIsPointer && field.Interface() != nil {
 			return true
+		}
+		return field.IsValid() && !field.IsZero()
+	}
+}
+
+// hasNotZeroValue is the validation function for validating if the current field's value is not the zero value for its type.
+func hasNotZeroValue(fl FieldLevel) bool {
+	field := fl.Field()
+	switch field.Kind() {
+	case reflect.Slice, reflect.Map, reflect.Ptr, reflect.Interface, reflect.Chan, reflect.Func:
+		return !field.IsNil()
+	default:
+		if fl.(*validate).fldIsPointer && field.Interface() != nil {
+			return !field.IsZero()
 		}
 		return field.IsValid() && !field.IsZero()
 	}

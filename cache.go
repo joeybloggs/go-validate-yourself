@@ -21,6 +21,7 @@ const (
 	typeKeys
 	typeEndKeys
 	typeOmitNil
+	typeOmitZero
 )
 
 const (
@@ -248,6 +249,10 @@ func (v *Validate) parseFieldTagsRecursive(tag string, fieldName string, alias s
 				panic(keysTagNotDefined)
 			}
 			return
+
+		case omitzero:
+			current.typeof = typeOmitZero
+			continue
 
 		case omitempty:
 			current.typeof = typeOmitEmpty

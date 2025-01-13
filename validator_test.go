@@ -14022,6 +14022,57 @@ func TestOmitNilAndRequired(t *testing.T) {
 	})
 }
 
+func TestOmitZero(t *testing.T) {
+	type (
+		OmitEmpty struct {
+			Str    string  `validate:"omitempty,min=10"`
+			StrPtr *string `validate:"omitempty,min=10"`
+		}
+		OmitZero struct {
+			Str    string  `validate:"omitzero,min=10"`
+			StrPtr *string `validate:"omitzero,min=10"`
+		}
+	)
+
+	var (
+		validate = New()
+		valid    = "this is the long string to pass the validation rule"
+		empty    = ""
+	)
+
+	t.Run("compare using valid data", func(t *testing.T) {
+		err1 := validate.Struct(OmitEmpty{Str: valid, StrPtr: &valid})
+		err2 := validate.Struct(OmitZero{Str: valid, StrPtr: &valid})
+
+		Equal(t, err1, nil)
+		Equal(t, err2, nil)
+	})
+
+	t.Run("compare fully empty omitempty and omitzero", func(t *testing.T) {
+		err1 := validate.Struct(OmitEmpty{})
+		err2 := validate.Struct(OmitZero{})
+
+		Equal(t, err1, nil)
+		Equal(t, err2, nil)
+	})
+
+	t.Run("compare with zero value", func(t *testing.T) {
+		err1 := validate.Struct(OmitEmpty{Str: "", StrPtr: nil})
+		err2 := validate.Struct(OmitZero{Str: "", StrPtr: nil})
+
+		Equal(t, err1, nil)
+		Equal(t, err2, nil)
+	})
+
+	t.Run("compare with empty value", func(t *testing.T) {
+		err1 := validate.Struct(OmitEmpty{Str: empty, StrPtr: &empty})
+		err2 := validate.Struct(OmitZero{Str: empty, StrPtr: &empty})
+
+		AssertError(t, err1, "OmitEmpty.StrPtr", "OmitEmpty.StrPtr", "StrPtr", "StrPtr", "min")
+		Equal(t, err2, nil)
+	})
+}
+
 func TestPrivateFieldsStruct(t *testing.T) {
 	type tc struct {
 		stct     interface{}
