@@ -13743,6 +13743,28 @@ func TestMultiOrOperatorGroup(t *testing.T) {
 	}
 }
 
+type testTag struct {
+	CreatedAt *time.Time `validate:"required" langKey:"test.created_at"`
+	String    string     `validate:"required" langKey:"test.string"`
+	Int       int        `validate:"required" langKey:"test.int"`
+	Uint      uint       `validate:"required" langKey:"test.uint"`
+	Float     float64    `validate:"required" langKey:"test.float"`
+	Array     []string   `validate:"required" langKey:"test.array"`
+}
+
+func TestReflectStructField(t *testing.T) {
+	validate := New()
+	var test testTag
+	err := validate.Struct(test)
+	NotEqual(t, err, nil)
+
+	errs, ok := err.(ValidationErrors)
+	Equal(t, ok, true)
+
+	fe := errs[0]
+	Equal(t, fe.ReflectStructField().Tag.Get("langKey"), "test.created_at")
+}
+
 func TestCronExpressionValidation(t *testing.T) {
 	tests := []struct {
 		value    string `validate:"cron"`
