@@ -11216,6 +11216,24 @@ func TestRequiredUnless(t *testing.T) {
 		Inner: &Inner{Field: &fieldVal},
 	}
 	_ = validate.Struct(test3)
+
+	test4 := struct {
+		Field1 int
+		Field2 string `validate:"required_unless: Field1 1 Field1 2"`
+		Field3 int
+		Field4 string `validate:"required_unless: Field3 1 Field3 2"`
+	}{
+		Field1: 1,
+		Field3: 3,
+	}
+
+	errs = validate.Struct(test4)
+	NotEqual(t, errs, nil)
+
+	ve = errs.(ValidationErrors)
+	Equal(t, len(ve), 1)
+
+	AssertError(t, errs, "Field2", "Field2", "Field2", "Field2", "required_unless")
 }
 
 func TestSkipUnless(t *testing.T) {
@@ -12221,6 +12239,26 @@ func TestExcludedUnless(t *testing.T) {
 		Inner: &Inner{Field: &fieldVal},
 	}
 	_ = validate.Struct(panicTest)
+
+	test9 := struct {
+		Field1 int
+		Field2 string `validate:"excluded_unless: Field1 1 Field1 2"`
+		Field3 int
+		Field4 string `validate:"excluded_unless: Field3 1 Field3 2"`
+	}{
+		Field1: 1,
+		Field2: "foo",
+		Field3: 3,
+		Field4: "foo",
+	}
+
+	errs = validate.Struct(test9)
+	NotEqual(t, errs, nil)
+
+	ve = errs.(ValidationErrors)
+	Equal(t, len(ve), 1)
+
+	AssertError(t, errs, "Field2", "Field2", "Field2", "Field2", "required_unless")
 }
 
 func TestLookup(t *testing.T) {
