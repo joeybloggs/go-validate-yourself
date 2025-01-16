@@ -14123,3 +14123,98 @@ func TestPrivateFieldsStruct(t *testing.T) {
 		Equal(t, len(errs), tc.errorNum)
 	}
 }
+
+func TestMultipleErrorsOption(t *testing.T) {
+	type tc struct {
+		stct     interface{}
+		errorNum int
+	}
+
+	tcs := []tc{
+		{
+			stct: &struct {
+				F1 int8  `validate:"eq=10,gte=10"`
+				F2 int16 `validate:"eq=10,gte=10"`
+				F3 int32 `validate:"eq=10,gte=10"`
+				F4 int64 `validate:"eq=10,gte=10"`
+			}{},
+			errorNum: 8,
+		},
+		{
+			stct: &struct {
+				F1 uint8  `validate:"eq=10,gte=10"`
+				F2 uint16 `validate:"eq=10,gte=10"`
+				F3 uint32 `validate:"eq=10,gte=10"`
+				F4 uint64 `validate:"eq=10,gte=10"`
+			}{},
+			errorNum: 8,
+		},
+		{
+			stct: &struct {
+				F1 string `validate:"eq=10,gte=10"`
+				F2 string `validate:"eq=10,gte=10"`
+			}{},
+			errorNum: 4,
+		},
+		{
+			stct: &struct {
+				F1 float32 `validate:"eq=10,gte=10"`
+				F2 float64 `validate:"eq=10,gte=10"`
+			}{},
+			errorNum: 4,
+		},
+		{
+			stct: struct {
+				F1 int8  `validate:"eq=10,gte=10"`
+				F2 int16 `validate:"eq=10,gte=10"`
+				F3 int32 `validate:"eq=10,gte=10"`
+				F4 int64 `validate:"eq=10,gte=10"`
+			}{},
+			errorNum: 8,
+		},
+		{
+			stct: struct {
+				F1 uint8  `validate:"eq=10,gte=10"`
+				F2 uint16 `validate:"eq=10,gte=10"`
+				F3 uint32 `validate:"eq=10,gte=10"`
+				F4 uint64 `validate:"eq=10,gte=10"`
+			}{},
+			errorNum: 8,
+		},
+		{
+			stct: struct {
+				F1 float32 `validate:"eq=10,gte=10"`
+				F2 float64 `validate:"eq=10,gte=10"`
+			}{},
+			errorNum: 4,
+		},
+		{
+			stct: struct {
+				F1 int `validate:"eq=10,gte=10"`
+				F2 struct {
+					F3 int `validate:"eq=10,gte=10"`
+				}
+			}{},
+			errorNum: 4,
+		},
+		{
+			stct: &struct {
+				F1 int `validate:"eq=10,gte=10"`
+				F2 struct {
+					F3 int `validate:"eq=10,gte=10"`
+				}
+			}{},
+			errorNum: 4,
+		},
+	}
+
+	validate := New(WithMultipleErrorsReturned())
+
+	for _, tc := range tcs {
+		err := validate.Struct(tc.stct)
+		NotEqual(t, err, nil)
+
+		errs := err.(ValidationErrors)
+		Equal(t, len(errs), tc.errorNum)
+	}
+}

@@ -138,7 +138,9 @@ func (v *validate) traverseField(ctx context.Context, parent reflect.Value, curr
 						kind:           kind,
 					},
 				)
-				return
+				if !v.Validator().multipleErrorsReturned {
+					return
+				}
 			}
 
 			v.str1 = string(append(ns, cf.altName...))
@@ -163,7 +165,9 @@ func (v *validate) traverseField(ctx context.Context, parent reflect.Value, curr
 						typ:            current.Type(),
 					},
 				)
-				return
+				if !v.Validator().multipleErrorsReturned {
+					return
+				}
 			}
 		}
 
@@ -439,7 +443,9 @@ OUTER:
 						)
 					}
 
-					return
+					if !v.Validator().multipleErrorsReturned {
+						return
+					}
 				}
 
 				ct = ct.next
@@ -478,7 +484,9 @@ OUTER:
 					},
 				)
 
-				return
+				if !v.Validator().multipleErrorsReturned {
+					return
+				}
 			}
 			ct = ct.next
 		}

@@ -24,3 +24,13 @@ func WithPrivateFieldValidation() Option {
 		v.privateFieldValidation = true
 	}
 }
+
+// WithMultipleErrorsReturned enables multi error return from a single struct field.
+//
+// By opting into this feature you are acknowledging that you are aware of the risks and accept any current or future
+// consequences of using this feature.
+func WithMultipleErrorsReturned() Option {
+	return func(v *Validate) {
+		v.multipleErrorsReturned = true
+	}
+}
