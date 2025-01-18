@@ -11027,6 +11027,32 @@ func TestStartsWithValidation(t *testing.T) {
 		}
 	}
 }
+func TestStartsNotWithValidation(t *testing.T) {
+	tests := []struct {
+		Value       string `validate:"startsnotwith=(/^ヮ^)/*:・ﾟ✧"`
+		Tag         string
+		ExpectedNil bool
+	}{
+		{Value: "(/^ヮ^)/*:・ﾟ✧ glitter", Tag: "startsnotwith=(/^ヮ^)/*:・ﾟ✧", ExpectedNil: false},
+		{Value: "abcd", Tag: "startsnotwith=(/^ヮ^)/*:・ﾟ✧", ExpectedNil: true},
+	}
+
+	validate := New()
+
+	for i, s := range tests {
+		errs := validate.Var(s.Value, s.Tag)
+
+		if (s.ExpectedNil && errs != nil) || (!s.ExpectedNil && errs == nil) {
+			t.Fatalf("Index: %d failed Error: %s", i, errs)
+		}
+
+		errs = validate.Struct(s)
+
+		if (s.ExpectedNil && errs != nil) || (!s.ExpectedNil && errs == nil) {
+			t.Fatalf("Index: %d failed Error: %s", i, errs)
+		}
+	}
+}
 
 func TestEndsWithValidation(t *testing.T) {
 	tests := []struct {
@@ -11036,6 +11062,33 @@ func TestEndsWithValidation(t *testing.T) {
 	}{
 		{Value: "glitter (/^ヮ^)/*:・ﾟ✧", Tag: "endswith=(/^ヮ^)/*:・ﾟ✧", ExpectedNil: true},
 		{Value: "(/^ヮ^)/*:・ﾟ✧ glitter", Tag: "endswith=(/^ヮ^)/*:・ﾟ✧", ExpectedNil: false},
+	}
+
+	validate := New()
+
+	for i, s := range tests {
+		errs := validate.Var(s.Value, s.Tag)
+
+		if (s.ExpectedNil && errs != nil) || (!s.ExpectedNil && errs == nil) {
+			t.Fatalf("Index: %d failed Error: %s", i, errs)
+		}
+
+		errs = validate.Struct(s)
+
+		if (s.ExpectedNil && errs != nil) || (!s.ExpectedNil && errs == nil) {
+			t.Fatalf("Index: %d failed Error: %s", i, errs)
+		}
+	}
+}
+
+func TestEndsNotWithValidation(t *testing.T) {
+	tests := []struct {
+		Value       string `validate:"endsnotwith=(/^ヮ^)/*:・ﾟ✧"`
+		Tag         string
+		ExpectedNil bool
+	}{
+		{Value: "glitter (/^ヮ^)/*:・ﾟ✧", Tag: "endsnotwith=(/^ヮ^)/*:・ﾟ✧", ExpectedNil: false},
+		{Value: "(/^ヮ^)/*:・ﾟ✧ glitter", Tag: "endsnotwith=(/^ヮ^)/*:・ﾟ✧", ExpectedNil: true},
 	}
 
 	validate := New()
@@ -12911,7 +12964,7 @@ func TestIsIso4217Validation(t *testing.T) {
 }
 
 func TestIsIso4217NumericValidation(t *testing.T) {
-	tests := []struct {
+	testsInt := []struct {
 		value    int `validate:"iso4217_numeric"`
 		expected bool
 	}{
@@ -12922,7 +12975,7 @@ func TestIsIso4217NumericValidation(t *testing.T) {
 
 	validate := New()
 
-	for i, test := range tests {
+	for i, test := range testsInt {
 
 		errs := validate.Var(test.value, "iso4217_numeric")
 
@@ -12936,6 +12989,32 @@ func TestIsIso4217NumericValidation(t *testing.T) {
 			}
 		}
 	}
+
+	testsUInt := []struct {
+		value    uint `validate:"iso4217_numeric"`
+		expected bool
+	}{
+		{8, true},
+		{12, true},
+		{13, false},
+	}
+
+	for i, test := range testsUInt {
+
+		errs := validate.Var(test.value, "iso4217_numeric")
+
+		if test.expected {
+			if !IsEqual(errs, nil) {
+				t.Fatalf("Index: %d iso4217 failed Error: %s", i, errs)
+			}
+		} else {
+			if IsEqual(errs, nil) {
+				t.Fatalf("Index: %d iso4217 failed Error: %s", i, errs)
+			}
+		}
+	}
+
+	PanicMatches(t, func() { _ = validate.Var(2.0, "iso4217_numeric") }, "Bad field type float64")
 }
 
 func TestTimeZoneValidation(t *testing.T) {
