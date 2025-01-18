@@ -25,6 +25,12 @@ type Address struct {
 	Phone  string `validate:"required"`
 }
 
+type SignupRequest struct {
+	Email           string `validate:"required,email"`
+	Password        string `validate:"required"`
+	PasswordConfrim string `validate:"eqfield=Password"`
+}
+
 // use a single instance of Validate, it caches struct info
 var validate *validator.Validate
 
@@ -34,6 +40,7 @@ func main() {
 
 	validateStruct()
 	validateVariable()
+	validateSignup()
 }
 
 func validateStruct() {
@@ -100,4 +107,43 @@ func validateVariable() {
 	}
 
 	// email ok, move on
+}
+
+// validateSignup demonstrates the process of validating a signup request
+// using a predefined struct validation. It creates a sample request with
+// invalid data to showcase error handling and a second request with valid
+// data to ensure successful validation.
+func validateSignup() {
+	fmt.Println("Validate Signup request")
+
+	// Create a SignupRequest instance with invalid data
+	req := &SignupRequest{
+		Email:           "test@test.com",
+		Password:        "Password123!",
+		PasswordConfrim: "badpassword",
+	}
+
+	// Validate the SignupRequest instance against defined struct validation rules
+	err := validate.Struct(req)
+	if err != nil {
+		// Log the validation failure and the specific error details
+		fmt.Printf("Signup request validation failed: %v\n", err)
+	}
+
+	// Create a new SignupRequest instance with corrected data
+	req = &SignupRequest{
+		Email:           "test@test.com",
+		Password:        "Password123!",
+		PasswordConfrim: "Password123!",
+	}
+
+	// Revalidate the corrected SignupRequest instance
+	err = validate.Struct(req)
+	if err != nil {
+		// If this code path executes, there is an unexpected error, so panic
+		panic(0) // Should not reach here in normal circumstances
+	}
+
+	// Log successful validation of the signup request
+	fmt.Println("Signup request has been validated")
 }
