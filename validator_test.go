@@ -13472,6 +13472,100 @@ func TestValidate_ValidateMapCtx(t *testing.T) {
 	}
 }
 
+func TestValidate_ValidateMapCtxWithKeys(t *testing.T) {
+	type args struct {
+		data   map[string]interface{}
+		rules  map[string]interface{}
+		errors map[string]interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "test invalid email",
+			args: args{
+				data: map[string]interface{}{
+					"email": "emailaddress",
+				},
+				rules: map[string]interface{}{
+					"email": "required,email",
+				},
+				errors: map[string]interface{}{
+					"email": "Key: 'email' Error:Field validation for 'email' failed on the 'email' tag",
+				},
+			},
+			want: 1,
+		},
+		{
+			name: "test multiple errors with capitalized keys",
+			args: args{
+				data: map[string]interface{}{
+					"Email": "emailaddress",
+					"Age":   15,
+				},
+				rules: map[string]interface{}{
+					"Email": "required,email",
+					"Age":   "number,gt=16",
+				},
+				errors: map[string]interface{}{
+					"Email": "Key: 'Email' Error:Field validation for 'Email' failed on the 'email' tag",
+					"Age":   "Key: 'Age' Error:Field validation for 'Age' failed on the 'gt' tag",
+				},
+			},
+			want: 2,
+		},
+		{
+			name: "test valid map data",
+			args: args{
+				data: map[string]interface{}{
+					"email": "email@example.com",
+					"age":   17,
+				},
+				rules: map[string]interface{}{
+					"email": "required,email",
+					"age":   "number,gt=16",
+				},
+				errors: map[string]interface{}{},
+			},
+			want: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			validate := New()
+			errs := validate.ValidateMapCtx(context.Background(), tt.args.data, tt.args.rules)
+			NotEqual(t, errs, nil)
+			Equal(t, len(errs), tt.want)
+			for key, err := range errs {
+				Equal(t, err.(ValidationErrors)[0].Error(), tt.args.errors[key])
+			}
+		})
+	}
+}
+
+func TestValidate_VarWithKey(t *testing.T) {
+	validate := New()
+	errs := validate.VarWithKey("email", "invalidemail", "required,email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "email", "email", "email", "email", "email")
+
+	errs = validate.VarWithKey("email", "email@example.com", "required,email")
+	Equal(t, errs, nil)
+}
+
+func TestValidate_VarWithKeyCtx(t *testing.T) {
+	validate := New()
+	errs := validate.VarWithKeyCtx(context.Background(), "age", 15, "required,gt=16")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "age", "age", "age", "age", "gt")
+
+	errs = validate.VarWithKey("age", 17, "required,gt=16")
+	Equal(t, errs, nil)
+}
+
 func TestMongoDBObjectIDFormatValidation(t *testing.T) {
 	tests := []struct {
 		value    string `validate:"mongodb"`
