@@ -5813,6 +5813,27 @@ func TestBase64Validation(t *testing.T) {
 	AssertError(t, errs, "", "", "", "", "base64")
 }
 
+func TestValidationStringPtr(t *testing.T) {
+	validate := New()
+	emptyString := ""
+	testString := "test"
+	data := struct {
+		Str     string  `validate:"omitempty,base64,max=1500"`
+		StrPtr1 *string `validate:"omitempty,base64,max=1500"`
+		StrPtr2 *string `validate:"omitempty,base64,max=1500"`
+		StrPtr3 *string `validate:"omitempty,base64,max=1500"`
+	}{
+		Str:     emptyString,
+		StrPtr1: nil,
+		StrPtr2: &emptyString,
+		StrPtr3: &testString,
+	}
+
+	err := validate.Struct(data)
+
+	Equal(t, err, nil)
+}
+
 func TestBase64URLValidation(t *testing.T) {
 	validate := New()
 
