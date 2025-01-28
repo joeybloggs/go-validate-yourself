@@ -8751,7 +8751,101 @@ func TestEmail(t *testing.T) {
 	errs = validate.Var(s, "email")
 	Equal(t, errs, nil)
 
+	s = `"test test"@email.com` // U+00A0 No-Break Space between quotes
+	errs = validate.Var(s, "email")
+	Equal(t, errs, nil)
+
 	s = `"@email.com`
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+0020 regular space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+00A0 No-Break Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+1680 Ogham Space Mark
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2000 En Quad
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2001 Em Quad
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2002 En Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2003 Em Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2004 Three-Per-Em Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2005 Four-Per-Em Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2006 Six-Per-Em Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2007 Figure Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2008 Punctuation Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2009 Thin Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+200A Hair Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+2028 Line Separator
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+202F Narrow No-Break Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = ` test@example.com` // U+205F Medium Mathematical Space
+	errs = validate.Var(s, "email")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "email")
+
+	s = `　test@example.com` // U+3000 Ideographic Space
 	errs = validate.Var(s, "email")
 	NotEqual(t, errs, nil)
 	AssertError(t, errs, "", "", "", "", "email")
@@ -12788,7 +12882,7 @@ func TestIsIso3166AlphaNumericEUValidation(t *testing.T) {
 		value    interface{}
 		expected bool
 	}{
-		{752, true}, //Sweden
+		{752, true}, // Sweden
 		{"752", true},
 		{826, false}, // UK
 		{"826", false},
