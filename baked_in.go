@@ -131,6 +131,7 @@ var (
 		"url":                           isURL,
 		"http_url":                      isHttpURL,
 		"uri":                           isURI,
+		"urn_rfc8141":                   isUrnRFC8141, // RFC 8141
 		"urn_rfc2141":                   isUrnRFC2141, // RFC 2141
 		"file":                          isFile,
 		"filepath":                      isFilePath,
@@ -1531,6 +1532,23 @@ func isHttpURL(fl FieldLevel) bool {
 		}
 
 		return url.Scheme == "http" || url.Scheme == "https"
+	}
+
+	panic(fmt.Sprintf("Bad field type %T", field.Interface()))
+}
+
+// isUrnRFC8141 is the validation function for validating if the current field's value is a valid URN as per RFC 8141.
+func isUrnRFC8141(fl FieldLevel) bool {
+	field := fl.Field()
+
+	switch field.Kind() {
+	case reflect.String:
+
+		str := field.String()
+
+		_, match := urn.Parse([]byte(str), urn.WithParsingMode(urn.RFC8141Only))
+
+		return match
 	}
 
 	panic(fmt.Sprintf("Bad field type %T", field.Interface()))

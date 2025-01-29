@@ -8244,6 +8244,83 @@ func TestUrnRFC2141(t *testing.T) {
 	PanicMatches(t, func() { _ = validate.Var(i, tag) }, "Bad field type int")
 }
 
+func TestUrnRFC8141(t *testing.T) {
+	tests := []struct {
+		param    string
+		expected bool
+	}{
+		{"urn:lex:it:ministero.giustizia:decreto:1992-07-24;358~art5", true},
+		{"urn:nid:nss/", true},
+		{"urn:nid:nss&", true},
+		{"urn:example:1/406/47452/2", true},
+		{"urn:example:foo-bar-baz-qux?+CCResolve:cc=uk", true},
+		{"urn:example:foo-bar-baz-qux?+&", true},
+		{"urn:example:foo-bar-baz-qux?+%16CCResolve:cc=uk", true},
+		{"urn:example:weather?=op=map&lat=39.56&lon=-104.85&datetime=1969-07-21T02:56:15Z", true},
+		{"urn:example:CamelCase1/406/47452/2?=lat=41.22255&long=16.06596#frag?some/slash/~%D0", true},
+		{"urn:example:CamelCase1/406/47452/2?=lat=41.22255&long=16.06596#frag", true},
+		{"URN:signs:()+,-.:=@;$_!*alnum123456789", true},
+		{"URN:abcd-abcd:x", true},
+		{"urn:urnx:urn", true},
+		{"urn:ciao:a:b:c", true},
+		{"urn:aaa:x:y:", true},
+		{"urn:ciao:-", true},
+		{"urn:colon:::::nss", true},
+		{"urn:ciao:@!=%2C(xyz)+a,b.*@g=$_'", true},
+		{"URN:hexes:%25", true},
+		{"URN:xyz:abc%1Dz%2F%3az", true},
+		{"URN:foo:a123,456", true},
+		{"urn:foo:a123,456", true},
+		{"urn:FOO:a123,456", true},
+		{"urn:foo:A123,456", true},
+		{"urn:foo:a123%2C456", true},
+		{"URN:FOO:a123%2c456", true},
+		{"URN:FOO:ABC%FFabc123%2c456", true},
+		{"URN:FOO:ABC%FFabc123%2C456%9A", true},
+		{"urn:ietf:params:scim:schemas:core:2.0:User", true},
+		{"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User:meta.lastModified", true},
+		{"urn:urn-7:informal", true},
+		{"urn:aa:", false},
+		{"URN:x:abc%1Dz%2F%3az", false},
+		{"urn:123456789-1234567890-abcdefghilmn:o", false},
+		{"urn:ex:ex?+a?+", false},
+		{"urn:xn--:nss", false},
+		{"urn:a:nss", false},
+		{"URN:trailing-:w", false},
+		{"URN:-leading:w", false},
+		{"urn:urn-s:nss", false},
+		{"urn:urn-0:nss", false},
+		{"urn:", false},
+	}
+
+	tag := "urn_rfc8141"
+
+	validate := New()
+
+	for i, test := range tests {
+
+		errs := validate.Var(test.param, tag)
+
+		if test.expected {
+			if !IsEqual(errs, nil) {
+				t.Fatalf("Index: %d URN failed Error: %s", i, errs)
+			}
+		} else {
+			if IsEqual(errs, nil) {
+				t.Fatalf("Index: %d URN failed Error: %s", i, errs)
+			} else {
+				val := getError(errs, "", "")
+				if val.Tag() != tag {
+					t.Fatalf("Index: %d URN failed Error: %s", i, errs)
+				}
+			}
+		}
+	}
+
+	i := 1
+	PanicMatches(t, func() { _ = validate.Var(i, tag) }, "Bad field type int")
+}
+
 func TestUrl(t *testing.T) {
 	tests := []struct {
 		param    string
