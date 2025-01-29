@@ -959,7 +959,7 @@ Although an empty string is a valid base64 URL safe value, this will report
 an empty string as an error, if you wish to accept an empty string as valid
 you can use this with the omitempty tag.
 
-	Usage: base64url
+	Usage: base64rawurl
 
 # Bitcoin Address
 
