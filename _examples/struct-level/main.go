@@ -36,7 +36,7 @@ func (gender Gender) String() string {
 	if gender < Male || gender > Intersex {
 		return "unknown"
 	}
-	return terms[gender]
+	return terms[gender-1]
 }
 
 // User contains user information
