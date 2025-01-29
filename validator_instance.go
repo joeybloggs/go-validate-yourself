@@ -166,19 +166,29 @@ func (v Validate) ValidateMapCtx(ctx context.Context, data map[string]interface{
 	errs := make(map[string]interface{})
 	for field, rule := range rules {
 		if ruleObj, ok := rule.(map[string]interface{}); ok {
-			if dataObj, ok := data[field].(map[string]interface{}); ok {
+
+			innerValidate := func(dataObj map[string]interface{}) {
 				err := v.ValidateMapCtx(ctx, dataObj, ruleObj)
 				if len(err) > 0 {
 					errs[field] = err
 				}
-			} else if dataObjs, ok := data[field].([]map[string]interface{}); ok {
-				for _, obj := range dataObjs {
-					err := v.ValidateMapCtx(ctx, obj, ruleObj)
-					if len(err) > 0 {
-						errs[field] = err
+			}
+			switch dataObj := data[field].(type) {
+			case map[string]interface{}:
+				innerValidate(dataObj)
+			case []map[string]interface{}:
+				for _, obj := range dataObj {
+					innerValidate(obj)
+				}
+			case []interface{}: // json.Unmarshal() will convert JSON Array to []interface
+				for _, obj := range dataObj {
+					if mapObj, ok := obj.(map[string]interface{}); ok {
+						innerValidate(mapObj)
+					} else {
+						errs[field] = errors.New("The field: '" + field + "' is not a map to dive")
 					}
 				}
-			} else {
+			default:
 				errs[field] = errors.New("The field: '" + field + "' is not a map to dive")
 			}
 		} else if ruleStr, ok := rule.(string); ok {
