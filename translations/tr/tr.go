@@ -999,6 +999,11 @@ func RegisterDefaultTranslations(v *validator.Validate, trans ut.Translator) (er
 			override:    false,
 		},
 		{
+			tag:         "alphaunicode",
+			translation: "{0} yalnızca alfabetik unicode karakterler içerebilir",
+			override:    false,
+		},
+		{
 			tag:         "alphanum",
 			translation: "{0} yalnızca alfanümerik karakterler içerebilir",
 			override:    false,
