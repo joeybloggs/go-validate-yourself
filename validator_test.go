@@ -2419,6 +2419,8 @@ func TestIPv6Validation(t *testing.T) {
 		{"2001:cdba:0000:0000:0000:0000:3257:9652", true},
 		{"2001:cdba:0:0:0:0:3257:9652", true},
 		{"2001:cdba::3257:9652", true},
+		{"::ffff:192.168.1.1", true},
+		{"::ffff:c0a8:0101", true},
 	}
 
 	validate := New()
@@ -2459,6 +2461,8 @@ func TestIPv4Validation(t *testing.T) {
 		{"2001:cdba:0000:0000:0000:0000:3257:9652", false},
 		{"2001:cdba:0:0:0:0:3257:9652", false},
 		{"2001:cdba::3257:9652", false},
+		{"::ffff:192.168.1.1", false},
+		{"::ffff:c0a8:0101", false},
 	}
 
 	validate := New()

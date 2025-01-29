@@ -421,16 +421,18 @@ func isCIDR(fl FieldLevel) bool {
 
 // isIPv4 is the validation function for validating if a value is a valid v4 IP address.
 func isIPv4(fl FieldLevel) bool {
-	ip := net.ParseIP(fl.Field().String())
+	ipStr := fl.Field().String()
+	ip := net.ParseIP(ipStr)
 
-	return ip != nil && ip.To4() != nil
+	return ip != nil && strings.Contains(ipStr, ".") && !strings.Contains(ipStr, ":")
 }
 
 // isIPv6 is the validation function for validating if the field's value is a valid v6 IP address.
 func isIPv6(fl FieldLevel) bool {
-	ip := net.ParseIP(fl.Field().String())
+	ipStr := fl.Field().String()
+	ip := net.ParseIP(ipStr)
 
-	return ip != nil && ip.To4() == nil
+	return ip != nil && strings.Contains(ipStr, ":")
 }
 
 // isIP is the validation function for validating if the field's value is a valid v4 or v6 IP address.
