@@ -733,7 +733,7 @@ This does the same as contains except for struct fields. It should only be used
 with string types. See the behavior of reflect.Value.String() for behavior on
 other types.
 
-	Usage: containsfield=InnerStructField.Field
+	Usage: fieldcontains=InnerStructField.Field
 
 # Field Excludes Another Field
 
@@ -741,7 +741,7 @@ This does the same as excludes except for struct fields. It should only be used
 with string types. See the behavior of reflect.Value.String() for behavior on
 other types.
 
-	Usage: excludesfield=InnerStructField.Field
+	Usage: fieldexcludes=InnerStructField.Field
 
 # Unique
 
