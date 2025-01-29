@@ -446,6 +446,27 @@ OUTER:
 			}
 
 		default:
+			switch current.Kind() {
+			case reflect.Ptr, reflect.Interface:
+				if !ct.runValidationWhenNil && current.IsNil() {
+					v.errs = append(v.errs,
+						&fieldError{
+							v:              v.v,
+							tag:            ct.aliasTag,
+							actualTag:      ct.tag,
+							ns:             v.str1,
+							structNs:       v.str2,
+							fieldLen:       uint8(len(cf.altName)),
+							structfieldLen: uint8(len(cf.name)),
+							value:          current.Interface(),
+							param:          ct.param,
+							kind:           kind,
+							typ:            current.Type(),
+						},
+					)
+					return
+				}
+			}
 
 			// set Field Level fields
 			v.slflParent = parent
