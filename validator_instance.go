@@ -13,41 +13,44 @@ import (
 )
 
 const (
-	defaultTagName        = "validate"
-	utf8HexComma          = "0x2C"
-	utf8Pipe              = "0x7C"
-	tagSeparator          = ","
-	orSeparator           = "|"
-	tagKeySeparator       = "="
-	structOnlyTag         = "structonly"
-	noStructLevelTag      = "nostructlevel"
-	omitempty             = "omitempty"
-	omitnil               = "omitnil"
-	isdefault             = "isdefault"
-	requiredWithoutAllTag = "required_without_all"
-	requiredWithoutTag    = "required_without"
-	requiredWithTag       = "required_with"
-	requiredWithAllTag    = "required_with_all"
-	requiredIfTag         = "required_if"
-	requiredUnlessTag     = "required_unless"
-	skipUnlessTag         = "skip_unless"
-	excludedWithoutAllTag = "excluded_without_all"
-	excludedWithoutTag    = "excluded_without"
-	excludedWithTag       = "excluded_with"
-	excludedWithAllTag    = "excluded_with_all"
-	excludedIfTag         = "excluded_if"
-	excludedUnlessTag     = "excluded_unless"
-	skipValidationTag     = "-"
-	diveTag               = "dive"
-	keysTag               = "keys"
-	endKeysTag            = "endkeys"
-	requiredTag           = "required"
-	namespaceSeparator    = "."
-	leftBracket           = "["
-	rightBracket          = "]"
-	restrictedTagChars    = ".[],|=+()`~!@#$%^&*\\\"/?<>{}"
-	restrictedAliasErr    = "Alias '%s' either contains restricted characters or is the same as a restricted tag needed for normal operation"
-	restrictedTagErr      = "Tag '%s' either contains restricted characters or is the same as a restricted tag needed for normal operation"
+	defaultTagName            = "validate"
+	utf8HexComma              = "0x2C"
+	utf8Pipe                  = "0x7C"
+	tagSeparator              = ","
+	orSeparator               = "|"
+	tagKeySeparator           = "="
+	structOnlyTag             = "structonly"
+	noStructLevelTag          = "nostructlevel"
+	omitempty                 = "omitempty"
+	omitnil                   = "omitnil"
+	isdefault                 = "isdefault"
+	requiredWithoutAllTag     = "required_without_all"
+	requiredWithoutTag        = "required_without"
+	requiredWithTag           = "required_with"
+	requiredWithAllTag        = "required_with_all"
+	requiredIfTag             = "required_if"
+	requiredIfContainsTag     = "required_if_contains"
+	requiredUnlessTag         = "required_unless"
+	skipUnlessTag             = "skip_unless"
+	excludedWithoutAllTag     = "excluded_without_all"
+	excludedWithoutTag        = "excluded_without"
+	excludedWithTag           = "excluded_with"
+	excludedWithAllTag        = "excluded_with_all"
+	excludedIfTag             = "excluded_if"
+	excludedIfContainsTag     = "excluded_if_contains"
+	excludedUnlessTag         = "excluded_unless"
+	excludedUnlessContainsTag = "excluded_unless_contains"
+	skipValidationTag         = "-"
+	diveTag                   = "dive"
+	keysTag                   = "keys"
+	endKeysTag                = "endkeys"
+	requiredTag               = "required"
+	namespaceSeparator        = "."
+	leftBracket               = "["
+	rightBracket              = "]"
+	restrictedTagChars        = ".[],|=+()`~!@#$%^&*\\\"/?<>{}"
+	restrictedAliasErr        = "Alias '%s' either contains restricted characters or is the same as a restricted tag needed for normal operation"
+	restrictedTagErr          = "Tag '%s' either contains restricted characters or is the same as a restricted tag needed for normal operation"
 )
 
 var (
@@ -128,9 +131,9 @@ func New(options ...Option) *Validate {
 
 		switch k {
 		// these require that even if the value is nil that the validation should run, omitempty still overrides this behaviour
-		case requiredIfTag, requiredUnlessTag, requiredWithTag, requiredWithAllTag, requiredWithoutTag, requiredWithoutAllTag,
-			excludedIfTag, excludedUnlessTag, excludedWithTag, excludedWithAllTag, excludedWithoutTag, excludedWithoutAllTag,
-			skipUnlessTag:
+		case requiredIfContainsTag, requiredIfTag, requiredUnlessTag, requiredWithTag, requiredWithAllTag, requiredWithoutTag, requiredWithoutAllTag,
+			excludedIfContainsTag, excludedIfTag, excludedUnlessContainsTag, excludedUnlessTag, excludedWithTag, excludedWithAllTag, excludedWithoutTag,
+			excludedWithoutAllTag, skipUnlessTag:
 			_ = v.registerValidation(k, wrapFunc(val), true, true)
 		default:
 			// no need to error check here, baked in will always be valid
