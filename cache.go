@@ -112,8 +112,6 @@ func (v *Validate) extractStructCache(current reflect.Value, sName string) *cStr
 		return cs
 	}
 
-	cs = &cStruct{name: sName, fields: make([]*cField, 0), fn: v.structLevelFuncs[typ]}
-
 	numFields := current.NumField()
 	rules := v.rules[typ]
 
@@ -122,6 +120,7 @@ func (v *Validate) extractStructCache(current reflect.Value, sName string) *cStr
 	var tag string
 	var customName string
 
+	cs = &cStruct{name: sName, fields: make([]*cField, 0, numFields), fn: v.structLevelFuncs[typ]}
 	for i := 0; i < numFields; i++ {
 
 		fld = typ.Field(i)
