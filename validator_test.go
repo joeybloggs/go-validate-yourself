@@ -7493,6 +7493,50 @@ func TestValidateByTagAndValue(t *testing.T) {
 	AssertError(t, errs, "", "", "", "", "isequaltestfunc")
 }
 
+func TestValidationChain(t *testing.T) {
+	monthNames := [12]string{"january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"}
+	daysInMonth := [12]int{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+
+	validate := New()
+
+	origFn, origRunOnNil := validate.GetValidation("eq")
+	NotEqual(t, origFn, nil)
+
+	// A validation function that checks if the value is equal to the number of days in a month
+	augmentedEq := func(ctx context.Context, fl FieldLevel) bool {
+		if fl.Field().Kind() == reflect.Int && strings.HasPrefix(fl.Param(), "days-in-") {
+			daysCount := 0
+			for idx, m := range monthNames {
+				if fl.Param()[8:] == m {
+					daysCount = daysInMonth[idx]
+					break
+				}
+			}
+			if daysCount > 0 && fl.Field().Int() == int64(daysCount) {
+				return true
+			}
+			return false
+		}
+
+		// The value and parameter are not comparable by us so next to the next link in the chain
+		if fl.Field().Kind() != reflect.Invalid || origRunOnNil {
+			return origFn(ctx, fl)
+		}
+		return false
+	}
+	errs := validate.RegisterValidationCtx("eq", augmentedEq)
+	Equal(t, errs, nil)
+
+	val := 31
+	field := "test"
+
+	errs = validate.VarWithValue(val, field, "eq=days-in-march")
+	Equal(t, errs, nil)
+
+	errs = validate.VarWithValue(val, field, "eq=days-in-april")
+	NotEqual(t, errs, nil)
+}
+
 func TestAddFunctions(t *testing.T) {
 	fn := func(fl FieldLevel) bool {
 		return true

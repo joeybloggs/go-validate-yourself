@@ -232,6 +232,15 @@ func (v *Validate) RegisterValidationCtx(tag string, fn FuncCtx, callValidationE
 	return v.registerValidation(tag, fn, false, nilCheckable)
 }
 
+// GetValidation gets the current validation function associated with the given tag
+func (v *Validate) GetValidation(tag string) (FuncCtx, bool) {
+	wrapper, ok := v.validations[tag]
+	if !ok {
+		return nil, false
+	}
+	return wrapper.fn, wrapper.runValidatinOnNil
+}
+
 func (v *Validate) registerValidation(tag string, fn FuncCtx, bakedIn bool, nilCheckable bool) error {
 	if len(tag) == 0 {
 		return errors.New("function Key cannot be empty")
