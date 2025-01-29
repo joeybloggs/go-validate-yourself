@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/go-playground/validator/v10"
 )
 

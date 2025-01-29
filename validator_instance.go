@@ -182,7 +182,7 @@ func (v Validate) ValidateMapCtx(ctx context.Context, data map[string]interface{
 				errs[field] = errors.New("The field: '" + field + "' is not a map to dive")
 			}
 		} else if ruleStr, ok := rule.(string); ok {
-			err := v.VarCtx(ctx, data[field], ruleStr)
+			err := v.VarCtx(ctx, data[field], ruleStr, field)
 			if err != nil {
 				errs[field] = err
 			}
@@ -619,7 +619,7 @@ func (v *Validate) StructExceptCtx(ctx context.Context, s interface{}, fields ..
 // You will need to assert the error if it's not nil eg. err.(validator.ValidationErrors) to access the array of errors.
 // validate Array, Slice and maps fields which may contain more than one error
 func (v *Validate) Var(field interface{}, tag string) error {
-	return v.VarCtx(context.Background(), field, tag)
+	return v.VarCtx(context.Background(), field, tag, "")
 }
 
 // VarCtx validates a single variable using tag style validation and allows passing of contextual
@@ -636,7 +636,7 @@ func (v *Validate) Var(field interface{}, tag string) error {
 // It returns InvalidValidationError for bad values passed in and nil or ValidationErrors as error otherwise.
 // You will need to assert the error if it's not nil eg. err.(validator.ValidationErrors) to access the array of errors.
 // validate Array, Slice and maps fields which may contain more than one error
-func (v *Validate) VarCtx(ctx context.Context, field interface{}, tag string) (err error) {
+func (v *Validate) VarCtx(ctx context.Context, field interface{}, tag, keyName string) (err error) {
 	if len(tag) == 0 || tag == skipValidationTag {
 		return nil
 	}
@@ -647,7 +647,7 @@ func (v *Validate) VarCtx(ctx context.Context, field interface{}, tag string) (e
 	vd := v.pool.Get().(*validate)
 	vd.top = val
 	vd.isPartial = false
-	vd.traverseField(ctx, val, val, vd.ns[0:0], vd.actualNs[0:0], defaultCField, ctag)
+	vd.traverseField(ctx, val, val, []byte(keyName), vd.actualNs[0:0], defaultCField, ctag)
 
 	if len(vd.errs) > 0 {
 		err = vd.errs

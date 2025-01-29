@@ -205,7 +205,13 @@ func (fe *fieldError) StructNamespace() string {
 // field's actual name.
 func (fe *fieldError) Field() string {
 
-	return fe.ns[len(fe.ns)-int(fe.fieldLen):]
+	nsLength, fieldLength := len(fe.ns), int(fe.fieldLen)
+
+	if fieldLength == 0 {
+		return fe.ns
+	}
+
+	return fe.ns[nsLength-fieldLength:]
 	// // return fe.field
 	// fld := fe.ns[len(fe.ns)-int(fe.fieldLen):]
 

@@ -2234,7 +2234,7 @@ func TestSQLValue2Validation(t *testing.T) {
 	AssertError(t, errs, "", "", "", "", "required")
 
 	val.Name = "Valid Name"
-	errs = validate.VarCtx(context.Background(), val, "required")
+	errs = validate.Var(val, "required")
 	Equal(t, errs, nil)
 
 	val.Name = "errorme"
@@ -13743,6 +13743,49 @@ func TestMultiOrOperatorGroup(t *testing.T) {
 	}
 }
 
+func TestValidate_ValidateMapCtxErrorMessage(t *testing.T) {
+	type args struct {
+		data   map[string]interface{}
+		rules  map[string]interface{}
+		errors map[string]interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "invalid_email",
+			args: args{
+				data: map[string]interface{}{
+					"email_address": "example.",
+				},
+				rules: map[string]interface{}{
+					"email_address": "omitempty,required,email",
+				},
+				errors: map[string]interface{}{
+					"email_address": "Key: 'email_address' Error:Field validation for 'email_address' failed on the 'email' tag",
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			validate := New()
+			got := validate.ValidateMapCtx(context.Background(), test.args.data, test.args.rules)
+			for key, err := range got {
+				fieldErrors, ok := err.(ValidationErrors)
+				if !ok {
+					t.Errorf("failed to get underlying value of interface")
+				}
+				if test.args.errors[key] != fieldErrors[0].Error() {
+					t.Errorf("\nwanted: '%v' \ngot: '%v' \n", test.args.errors[key], err)
+				}
+
+			}
+		})
+	}
+}
 func TestCronExpressionValidation(t *testing.T) {
 	tests := []struct {
 		value    string `validate:"cron"`
