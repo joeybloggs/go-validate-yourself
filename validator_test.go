@@ -13778,6 +13778,41 @@ func TestCronExpressionValidation(t *testing.T) {
 	}
 }
 
+func TestPythonVariableValidation(t *testing.T) {
+	tests := []struct {
+		value    string `validate:"python_var"`
+		tag      string
+		expected bool
+	}{
+		{"x", "python_var", true},
+		{"x0", "python_var", true},
+		{"x_0", "python_var", true},
+		{"__init__", "python_var", true},
+		{"x-x", "python_var", false},
+		{"0x", "python_var", false},
+		{"abcdefghijklmnopqrstuvwxyz", "python_var", true},
+		{"abcde_0_0466___", "python_var", true},
+		{"while", "python_var", false},
+		{"False", "python_var", false},
+		{"(x)", "python_var", false},
+	}
+
+	validate := New()
+
+	for i, test := range tests {
+		errs := validate.Var(test.value, test.tag)
+		if test.expected {
+			if !IsEqual(errs, nil) {
+				t.Fatalf(`Index: %d python_var "%s" failed Error: %s`, i, test.value, errs)
+			}
+		} else {
+			if IsEqual(errs, nil) {
+				t.Fatalf(`Index: %d python_var "%s" should have errs`, i, test.value)
+			}
+		}
+	}
+}
+
 func TestNestedStructValidation(t *testing.T) {
 	validator := New(WithRequiredStructEnabled())
 
