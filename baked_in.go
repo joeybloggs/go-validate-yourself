@@ -241,6 +241,7 @@ var (
 		"mongodb_connection_string":     isMongoDBConnectionString,
 		"cron":                          isCron,
 		"spicedb":                       isSpiceDB,
+		"isvalid":                       isValid,
 	}
 )
 
@@ -3044,4 +3045,30 @@ func hasLuhnChecksum(fl FieldLevel) bool {
 func isCron(fl FieldLevel) bool {
 	cronString := fl.Field().String()
 	return cronRegex().MatchString(cronString)
+}
+
+func isValid(fl FieldLevel) bool {
+	if instance, ok := tryConvertFieldTo[interface{ Validate() error }](fl.Field()); ok {
+		return instance.Validate() == nil
+	}
+
+	return false
+}
+
+func tryConvertFieldTo[V any](field reflect.Value) (v V, ok bool) {
+	v, ok = convertFieldTo[V](field)
+	if !ok && field.CanAddr() {
+		v, ok = convertFieldTo[V](field.Addr())
+	}
+
+	return v, ok
+}
+
+func convertFieldTo[V any](field reflect.Value) (v V, ok bool) {
+	if v, ok = field.Interface().(V); ok {
+		return v, ok
+	}
+
+	var zero V
+	return zero, false
 }

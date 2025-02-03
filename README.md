@@ -262,6 +262,8 @@ validate := validator.New(validator.WithRequiredStructEnabled())
 | excluded_without | Excluded Without |
 | excluded_without_all | Excluded Without All |
 | unique | Unique |
+| isvalid | Verify if the method `Validate() error` does not return an error |
+
 
 #### Aliases:
 | Tag | Description |

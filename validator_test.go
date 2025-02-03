@@ -7,6 +7,7 @@ import (
 	"database/sql/driver"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -12080,7 +12081,7 @@ func TestExcludedIf(t *testing.T) {
 
 	test11 := struct {
 		Field1 bool
-  		Field2 *string `validate:"excluded_if=Field1 false"`
+		Field2 *string `validate:"excluded_if=Field1 false"`
 	}{
 		Field1: false,
 		Field2: nil,
@@ -14122,4 +14123,79 @@ func TestPrivateFieldsStruct(t *testing.T) {
 		errs := err.(ValidationErrors)
 		Equal(t, len(errs), tc.errorNum)
 	}
+}
+
+type NotRed struct {
+	Color string
+}
+
+func (r *NotRed) Validate() error {
+	if r != nil && r.Color == "red" {
+		return errors.New("should not be red")
+	}
+
+	return nil
+}
+
+func TestIsValid(t *testing.T) {
+	t.Run("using pointer", func(t *testing.T) {
+		validate := New()
+
+		type Test struct {
+			String string
+			Inner  *NotRed `validate:"isvalid"`
+		}
+
+		var tt Test
+
+		errs := validate.Struct(tt)
+		NotEqual(t, errs, nil)
+
+		fe := errs.(ValidationErrors)[0]
+		Equal(t, fe.Field(), "Inner")
+		Equal(t, fe.Namespace(), "Test.Inner")
+		Equal(t, fe.Tag(), "isvalid")
+
+		tt.Inner = &NotRed{Color: "blue"}
+		errs = validate.Struct(tt)
+		Equal(t, errs, nil)
+
+		tt.Inner = &NotRed{Color: "red"}
+		errs = validate.Struct(tt)
+		NotEqual(t, errs, nil)
+
+		fe = errs.(ValidationErrors)[0]
+		Equal(t, fe.Field(), "Inner")
+		Equal(t, fe.Namespace(), "Test.Inner")
+		Equal(t, fe.Tag(), "isvalid")
+
+	})
+
+	t.Run("using struct", func(t *testing.T) {
+		validate := New()
+
+		type Test2 struct {
+			String string
+			Inner  NotRed `validate:"isvalid"`
+		}
+
+		var tt2 Test2
+
+		errs := validate.Struct(&tt2)
+		Equal(t, errs, nil)
+
+		tt2.Inner = NotRed{Color: "blue"}
+
+		errs = validate.Struct(&tt2)
+		Equal(t, errs, nil)
+
+		tt2.Inner = NotRed{Color: "red"}
+		errs = validate.Struct(&tt2)
+		NotEqual(t, errs, nil)
+
+		fe := errs.(ValidationErrors)[0]
+		Equal(t, fe.Field(), "Inner")
+		Equal(t, fe.Namespace(), "Test2.Inner")
+		Equal(t, fe.Tag(), "isvalid")
+	})
 }
