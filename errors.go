@@ -118,6 +118,8 @@ type FieldError interface {
 	// Field returns the fields name with the tag name taking precedence over the
 	// field's actual name.
 	//
+	// `RegisterTagNameFunc` must be registered to get tag value.
+	//
 	// eq. JSON name "fname"
 	// see StructField for comparison
 	Field() string
