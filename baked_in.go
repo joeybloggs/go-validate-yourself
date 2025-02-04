@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"net"
@@ -1664,16 +1665,8 @@ func isFilePath(fl FieldLevel) bool {
 			return false
 		}
 		if _, err = os.Stat(field.String()); err != nil {
-			switch t := err.(type) {
-			case *fs.PathError:
-				if t.Err == syscall.EINVAL {
-					// It's definitely an invalid character in the filepath.
-					return false
-				}
-				// It could be a permission error, a does-not-exist error, etc.
-				// Out-of-scope for this validation, though.
-				return true
-			default:
+			var pathErr *fs.PathError
+			if !errors.As(err, &pathErr) {
 				// Something went *seriously* wrong.
 				/*
 					Per https://pkg.go.dev/os#Stat:
@@ -1681,6 +1674,13 @@ func isFilePath(fl FieldLevel) bool {
 				*/
 				panic(err)
 			}
+			if errors.Is(pathErr.Err, syscall.EINVAL) {
+				// It's definitely an invalid character in the filepath.
+				return false
+			}
+				// It could be a permission error, a does-not-exist error, etc.
+				// Out-of-scope for this validation, though.
+			return true
 		}
 	}
 
@@ -2651,27 +2651,28 @@ func isDirPath(fl FieldLevel) bool {
 			return false
 		}
 		if _, err = os.Stat(field.String()); err != nil {
-			switch t := err.(type) {
-			case *fs.PathError:
-				if t.Err == syscall.EINVAL {
-					// It's definitely an invalid character in the path.
-					return false
-				}
-				// It could be a permission error, a does-not-exist error, etc.
-				// Out-of-scope for this validation, though.
-				// Lastly, we make sure it is a directory.
-				if strings.HasSuffix(field.String(), string(os.PathSeparator)) {
-					return true
-				} else {
-					return false
-				}
-			default:
+			var pathErr *fs.PathError
+			if !errors.As(err, &pathErr) {
 				// Something went *seriously* wrong.
 				/*
 					Per https://pkg.go.dev/os#Stat:
 						"If there is an error, it will be of type *PathError."
 				*/
 				panic(err)
+			}
+
+			if errors.Is(pathErr.Err, syscall.EINVAL) {
+				// It's definitely an invalid character in the path.
+				return false
+			} 
+
+			if strings.HasSuffix(field.String(), string(os.PathSeparator)) {
+				// It could be a permission error, a does-not-exist error, etc.
+				// Out-of-scope for this validation, though.
+				// Lastly, we make sure it is a directory.
+				return true
+			} else {
+				return false
 			}
 		}
 		// We repeat the check here to make sure it is an explicit directory in case the above os.Stat didn't trigger an error.
