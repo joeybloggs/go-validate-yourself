@@ -1158,7 +1158,7 @@ func RegisterDefaultTranslations(v *validator.Validate, trans ut.Translator) (er
 		},
 		{
 			tag:         "e164",
-			translation: "{0} должен быть E.164 formatted phone number",
+			translation: "{0} должен быть действительным номером телефона в формате E.164",
 			override:    false,
 		},
 		{
