@@ -134,6 +134,7 @@ validate := validator.New(validator.WithRequiredStructEnabled())
 | Tag | Description |
 | - | - |
 | alpha | Alpha Only |
+| alphaspace | Alpha Space |
 | alphanum | Alphanumeric |
 | alphanumunicode | Alphanumeric Unicode |
 | alphaunicode | Alpha Unicode |

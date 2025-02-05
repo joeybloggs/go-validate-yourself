@@ -8990,6 +8990,31 @@ func TestAlpha(t *testing.T) {
 	AssertError(t, errs, "", "", "", "", "alpha")
 }
 
+func TestAlphaSpace(t *testing.T) {
+	validate := New()
+
+	s := "abcd"
+	errs := validate.Var(s, "alphaspace")
+	Equal(t, errs, nil)
+
+	s = "abc def"
+	errs = validate.Var(s, "alphaspace")
+	Equal(t, errs, nil)
+
+	s = "  "
+	errs = validate.Var(s, "alphaspace")
+	Equal(t, errs, nil)
+
+	s = "abc!"
+	errs = validate.Var(s, "alphaspace")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "alphaspace")
+
+	errs = validate.Var(1, "alphaspace")
+	NotEqual(t, errs, nil)
+	AssertError(t, errs, "", "", "", "", "alphaspace")
+}
+
 func TestStructStringValidation(t *testing.T) {
 	validate := New()
 
