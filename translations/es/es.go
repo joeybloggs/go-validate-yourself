@@ -35,6 +35,20 @@ func RegisterDefaultTranslations(v *validator.Validate, trans ut.Translator) (er
 			override:    false,
 		},
 		{
+			tag:         "required_without",
+			translation: "{0} es un campo requerido cuando los campos [{1}] no estan presentes",
+			customTransFunc: func(ut ut.Translator, fe validator.FieldError) string {
+
+				t, err := ut.T(fe.Tag(), fe.Field(), fe.Param())
+				if err != nil {
+					return fe.(error).Error()
+				}
+
+				return t
+			},
+			override: false,
+		},
+		{
 			tag: "len",
 			customRegisFunc: func(ut ut.Translator) (err error) {
 

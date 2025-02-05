@@ -22,12 +22,13 @@ func TestTranslations(t *testing.T) {
 	Equal(t, err, nil)
 
 	type Inner struct {
-		EqCSFieldString  string
-		NeCSFieldString  string
-		GtCSFieldString  string
-		GteCSFieldString string
-		LtCSFieldString  string
-		LteCSFieldString string
+		EqCSFieldString      string
+		NeCSFieldString      string
+		GtCSFieldString      string
+		GteCSFieldString     string
+		LtCSFieldString      string
+		LteCSFieldString     string
+		RequiredWithoutField string
 	}
 
 	type Test struct {
@@ -36,6 +37,7 @@ func TestTranslations(t *testing.T) {
 		RequiredNumber    int               `validate:"required"`
 		RequiredMultiple  []string          `validate:"required"`
 		RequiredIf        string            `validate:"required_if=Inner.RequiredIf abcd"`
+		RequiredWithout   string            `validate:"required_without=Inner.RequiredWithoutField"`
 		LenString         string            `validate:"len=1"`
 		LenNumber         float64           `validate:"len=1113.00"`
 		LenMultiple       []string          `validate:"len=7"`
@@ -645,6 +647,10 @@ func TestTranslations(t *testing.T) {
 			expected: "UniqueMap debe contener valores únicos",
 		},
 		{
+			ns:       "Test.RequiredWithout",
+			expected: "RequiredWithout es un campo requerido cuando los campos [Inner.RequiredWithoutField] no estan presentes",
+    },
+    {
 			ns: "Test.Image",
 			expected: "Image debe ser una imagen válida",
 		},
