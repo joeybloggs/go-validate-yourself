@@ -8762,6 +8762,91 @@ func TestEmail(t *testing.T) {
 	AssertError(t, errs, "", "", "", "", "email")
 }
 
+func BenchmarkEmailValidation(b *testing.B) {
+	validate := New()
+
+	// Valid email test cases
+	validEmails := []string{
+		"test@mail.com",
+		"Dörte@Sörensen.example.com",
+		"θσερ@εχαμπλε.ψομ",
+		"юзер@екзампл.ком",
+		"उपयोगकर्ता@उदाहरण.कॉम",
+		"用户@例子.广告",
+		`"test test"@email.com`,
+	}
+
+	// Invalid email test cases
+	invalidEmails := []string{
+		"mail@domain_with_underscores.org",
+		"",
+		"test@email",
+		"test@email.",
+		"@email.com",
+		`"@email.com`,
+	}
+
+	// Define sub-benchmarks
+	b.Run("Valid_Emails", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, email := range validEmails {
+				_ = validate.Var(email, "email")
+			}
+		}
+	})
+
+	b.Run("Invalid_Emails", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			for _, email := range invalidEmails {
+				_ = validate.Var(email, "email")
+			}
+		}
+	})
+
+	b.Run("Mixed_Types", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_ = validate.Var(true, "email")            // Test with boolean
+			_ = validate.Var("test@mail.com", "email") // Test with string
+		}
+	})
+
+	// Benchmark individual cases
+	for _, email := range validEmails {
+		b.Run("Valid_"+email, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				_ = validate.Var(email, "email")
+			}
+		})
+	}
+
+	for _, email := range invalidEmails {
+		name := email
+		if name == "" {
+			name = "Empty"
+		}
+		b.Run("Invalid_"+name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				_ = validate.Var(email, "email")
+			}
+		})
+	}
+
+	// Benchmark single instance vs new validator
+	b.Run("Single_Validator", func(b *testing.B) {
+		v := New()
+		for i := 0; i < b.N; i++ {
+			_ = v.Var("test@mail.com", "email")
+		}
+	})
+
+	b.Run("New_Validator_Each_Time", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			v := New()
+			_ = v.Var("test@mail.com", "email")
+		}
+	})
+}
+
 func TestHexColor(t *testing.T) {
 	validate := New()
 
@@ -12080,7 +12165,7 @@ func TestExcludedIf(t *testing.T) {
 
 	test11 := struct {
 		Field1 bool
-  		Field2 *string `validate:"excluded_if=Field1 false"`
+		Field2 *string `validate:"excluded_if=Field1 false"`
 	}{
 		Field1: false,
 		Field2: nil,
