@@ -697,6 +697,19 @@ func TestAliasTags(t *testing.T) {
 	PanicMatches(t, func() { validate.RegisterAlias("exists!", "gt=5,lt=10") }, "Alias 'exists!' either contains restricted characters or is the same as a restricted tag needed for normal operation")
 }
 
+func TestNoPanicOnRequiredIfBeforeGTEWithPointer(t *testing.T) {
+	val := New()
+
+	type WithPointer struct {
+		Type     string `validate:"required"`
+		Quantity *int64 `validate:"required_if=Type special,gte=2"`
+	}
+	structWithPointer := &WithPointer{Quantity: nil, Type: "notspecial"}
+
+	errs := val.Struct(structWithPointer)
+	NotEqual(t, errs, nil)
+}
+
 func TestNilValidator(t *testing.T) {
 	type TestStruct struct {
 		Test string `validate:"required"`
