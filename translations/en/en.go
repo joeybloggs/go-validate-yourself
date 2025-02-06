@@ -17,6 +17,19 @@ import (
 // RegisterDefaultTranslations registers a set of default translations
 // for all built in tag's in validator; you may add your own as desired.
 func RegisterDefaultTranslations(v *validator.Validate, trans ut.Translator) (err error) {
+	tf, err := RegisterDefaultTranslationsFunc(trans)
+	if err != nil {
+		return err
+	}
+
+	return v.RegisterTranslationsFunc(trans, tf)
+}
+
+// RegisterDefaultTranslationsFunc registers a set of default translations
+// for all built in tag's in validator; you may add your own as desired.
+// This version returns a map[tag]validator.TranslationFunc, which can be set on a validator using
+// validator.Validate.RegisterTranslationsFunc.
+func RegisterDefaultTranslationsFunc(trans ut.Translator) (map[string]validator.TranslationFunc, error) {
 	translations := []struct {
 		tag             string
 		translation     string
@@ -1444,24 +1457,31 @@ func RegisterDefaultTranslations(v *validator.Validate, trans ut.Translator) (er
 		},
 	}
 
+	var err error
+	ret := map[string]validator.TranslationFunc{}
+
 	for _, t := range translations {
 
 		if t.customTransFunc != nil && t.customRegisFunc != nil {
-			err = v.RegisterTranslation(t.tag, trans, t.customRegisFunc, t.customTransFunc)
+			ret[t.tag] = t.customTransFunc
+			err = t.customRegisFunc(trans)
 		} else if t.customTransFunc != nil && t.customRegisFunc == nil {
-			err = v.RegisterTranslation(t.tag, trans, registrationFunc(t.tag, t.translation, t.override), t.customTransFunc)
+			ret[t.tag] = t.customTransFunc
+			err = registrationFunc(t.tag, t.translation, t.override)(trans)
 		} else if t.customTransFunc == nil && t.customRegisFunc != nil {
-			err = v.RegisterTranslation(t.tag, trans, t.customRegisFunc, translateFunc)
+			ret[t.tag] = translateFunc
+			err = t.customRegisFunc(trans)
 		} else {
-			err = v.RegisterTranslation(t.tag, trans, registrationFunc(t.tag, t.translation, t.override), translateFunc)
+			ret[t.tag] = translateFunc
+			err = registrationFunc(t.tag, t.translation, t.override)(trans)
 		}
 
 		if err != nil {
-			return
+			return nil, err
 		}
 	}
 
-	return
+	return ret, nil
 }
 
 func registrationFunc(tag string, translation string, override bool) validator.RegisterTranslationsFunc {

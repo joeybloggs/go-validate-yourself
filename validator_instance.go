@@ -360,6 +360,27 @@ func (v *Validate) RegisterTranslation(tag string, trans ut.Translator, register
 	return
 }
 
+// RegisterTranslationsFunc registers translations against the provided tag.
+// This assumes that the tag translations have already been added to the Translator.
+func (v *Validate) RegisterTranslationsFunc(trans ut.Translator, translationsFn map[string]TranslationFunc) (err error) {
+
+	if v.transTagFunc == nil {
+		v.transTagFunc = make(map[ut.Translator]map[string]TranslationFunc)
+	}
+
+	m, ok := v.transTagFunc[trans]
+	if !ok {
+		m = make(map[string]TranslationFunc)
+		v.transTagFunc[trans] = m
+	}
+
+	for tag, fn := range translationsFn {
+		m[tag] = fn
+	}
+
+	return
+}
+
 // Struct validates a structs exposed fields, and automatically validates nested structs, unless otherwise specified.
 //
 // It returns InvalidValidationError for bad values passed in and nil or ValidationErrors as error otherwise.
