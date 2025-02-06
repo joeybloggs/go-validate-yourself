@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -114,33 +115,36 @@ func main() {
 		// this check is only needed when your code could produce
 		// an invalid value for validation such as interface with nil
 		// value most including myself do not usually have code like this.
-		if _, ok := err.(*validator.InvalidValidationError); ok {
+		if errors.As(err, &validator.InvalidValidationError{}) {
 			fmt.Println(err)
 			return
 		}
 
-		for _, err := range err.(validator.ValidationErrors) {
-			e := validationError{
-				Namespace:       err.Namespace(),
-				Field:           err.Field(),
-				StructNamespace: err.StructNamespace(),
-				StructField:     err.StructField(),
-				Tag:             err.Tag(),
-				ActualTag:       err.ActualTag(),
-				Kind:            fmt.Sprintf("%v", err.Kind()),
-				Type:            fmt.Sprintf("%v", err.Type()),
-				Value:           fmt.Sprintf("%v", err.Value()),
-				Param:           err.Param(),
-				Message:         err.Error(),
-			}
+		var validateErrs validator.ValidationErrors
+		if errors.As(err, &validateErrs) {
+			for _, err := range validateErrs {
+				e := validationError{
+					Namespace:       err.Namespace(),
+					Field:           err.Field(),
+					StructNamespace: err.StructNamespace(),
+					StructField:     err.StructField(),
+					Tag:             err.Tag(),
+					ActualTag:       err.ActualTag(),
+					Kind:            fmt.Sprintf("%v", err.Kind()),
+					Type:            fmt.Sprintf("%v", err.Type()),
+					Value:           fmt.Sprintf("%v", err.Value()),
+					Param:           err.Param(),
+					Message:         err.Error(),
+				}
 
-			indent, err := json.MarshalIndent(e, "", "  ")
-			if err != nil {
-				fmt.Println(err)
-				panic(err)
-			}
+				indent, err := json.MarshalIndent(e, "", "  ")
+				if err != nil {
+					fmt.Println(err)
+					panic(err)
+				}
 
-			fmt.Println(string(indent))
+				fmt.Println(string(indent))
+			}
 		}
 
 		// from here you can create your own error messages in whatever language you wish
