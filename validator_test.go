@@ -14123,3 +14123,49 @@ func TestPrivateFieldsStruct(t *testing.T) {
 		Equal(t, len(errs), tc.errorNum)
 	}
 }
+
+func TestSelectTag(t *testing.T) {
+	validator := New(WithRequiredStructEnabled())
+
+	t.Run("on struct", func(t *testing.T) {
+		type Test struct {
+			Int sql.NullInt64 `validate:"required,select=Int64,gt=1"`
+		}
+
+		validCase := Test{sql.NullInt64{Int64: 2}}
+		zeroCase := Test{}
+		invalidCase := Test{sql.NullInt64{Int64: 1}}
+
+		Equal(t, validator.Struct(validCase), nil)
+		AssertError(t, validator.Struct(zeroCase), "Test.Int", "Test.Int", "Int", "Int", "required")
+		AssertError(t, validator.Struct(invalidCase), "Test.Int.Int64", "Test.Int.Int64", "Int.Int64", "Int.Int64", "gt")
+	})
+
+	t.Run("on map", func(t *testing.T) {
+		type Test struct {
+			Map map[string]int `validate:"required,select=key,gt=1"`
+		}
+
+		validCase := Test{map[string]int{"key": 2}}
+		zeroCase := Test{}
+		invalidCase := Test{map[string]int{"key": 1}}
+
+		Equal(t, validator.Struct(validCase), nil)
+		AssertError(t, validator.Struct(zeroCase), "Test.Map", "Test.Map", "Map", "Map", "required")
+		AssertError(t, validator.Struct(invalidCase), "Test.Map[key]", "Test.Map[key]", "Map[key]", "Map[key]", "gt")
+	})
+
+	t.Run("missing select value", func(t *testing.T) {
+		type Test struct {
+			Int sql.NullInt64 `validate:"required,select"`
+		}
+
+		defer func() {
+			if r := recover(); r != invalidSelectTag {
+				t.Errorf("Expected panic %q, got %v", invalidSelectTag, r)
+			}
+		}()
+
+		_ = validator.Struct(Test{})
+	})
+}

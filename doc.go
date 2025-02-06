@@ -249,6 +249,20 @@ Example #2
 	// eq=1|eq=2 will be applied to each array element in the map keys
 	// required will be applied to map values
 
+# Select
+
+Selects a struct field or map value for which the following tags will be applied.
+It is similar to the dive tags for arrays/slices/maps except that it only applies to a single struct field or map value.
+
+	Usage: select=FieldName
+
+Example:
+
+	// Validates that the field "V" of "MyStruct.Field" is greater than 10 when "Field" is valid
+	type MyStruct struct {
+		Field sql.Null[uint] `validate:"omitempty,select=V,gt=10"`
+	}
+
 # Required
 
 This validates that the value is not the data types default zero value.

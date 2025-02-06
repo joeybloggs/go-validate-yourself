@@ -445,8 +445,60 @@ OUTER:
 				ct = ct.next
 			}
 
-		default:
+		case typeSelect:
+			var name, altName string
+			var fieldValue reflect.Value
+			switch kind {
+			case reflect.Struct:
 
+				v.misc = append(v.misc[0:0], cf.name...)
+				v.misc = append(v.misc, '.')
+				v.misc = append(v.misc, ct.param...)
+				name = string(v.misc)
+
+				if cf.namesEqual {
+					altName = name
+				} else {
+					v.misc = append(v.misc[0:0], cf.altName...)
+					v.misc = append(v.misc, '.')
+					v.misc = append(v.misc, ct.param...)
+					altName = string(v.misc)
+				}
+
+				fieldValue = current.FieldByName(ct.param)
+
+			case reflect.Map:
+
+				v.misc = append(v.misc[0:0], cf.name...)
+				v.misc = append(v.misc, '[')
+				v.misc = append(v.misc, ct.param...)
+				v.misc = append(v.misc, ']')
+				name = string(v.misc)
+
+				if cf.namesEqual {
+					altName = name
+				} else {
+					v.misc = append(v.misc[0:0], cf.altName...)
+					v.misc = append(v.misc, '[')
+					v.misc = append(v.misc, ct.param...)
+					v.misc = append(v.misc, ']')
+					altName = string(v.misc)
+				}
+
+				fieldValue = current.MapIndex(reflect.ValueOf(ct.param))
+
+			default:
+				panic("can't select field on a non struct or map types")
+			}
+
+			v.traverseField(ctx, parent, fieldValue, ns, structNs, &cField{
+				altName: altName,
+				name:    name,
+			}, ct.next)
+
+			return
+
+		default:
 			// set Field Level fields
 			v.slflParent = parent
 			v.flField = current

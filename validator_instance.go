@@ -38,6 +38,7 @@ const (
 	excludedIfTag         = "excluded_if"
 	excludedUnlessTag     = "excluded_unless"
 	skipValidationTag     = "-"
+	selectTag             = "select"
 	diveTag               = "dive"
 	keysTag               = "keys"
 	endKeysTag            = "endkeys"

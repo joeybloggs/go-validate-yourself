@@ -21,12 +21,14 @@ const (
 	typeKeys
 	typeEndKeys
 	typeOmitNil
+	typeSelect
 )
 
 const (
 	invalidValidation   = "Invalid validation tag on field '%s'"
 	undefinedValidation = "Undefined validation function '%s' on field '%s'"
 	keysTagNotDefined   = "'" + endKeysTag + "' tag encountered without a corresponding '" + keysTag + "' tag"
+	invalidSelectTag    = "'select' tags must have exactly one value"
 )
 
 type structCache struct {
@@ -266,6 +268,22 @@ func (v *Validate) parseFieldTagsRecursive(tag string, fieldName string, alias s
 			continue
 
 		default:
+			if strings.HasPrefix(t, selectTag) {
+				vals := strings.SplitN(t, tagKeySeparator, 2)
+
+				// Check again for exact match to prevent future conflicts
+				if vals[0] == selectTag {
+					if len(vals) == 1 {
+						panic(invalidSelectTag)
+					}
+
+					current.typeof = typeSelect
+					current.hasParam = true
+					current.param = vals[1]
+					continue
+				}
+			}
+
 			if t == isdefault {
 				current.typeof = typeIsDefault
 			}
