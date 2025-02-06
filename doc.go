@@ -143,7 +143,7 @@ so the above will become excludesall=0x2C.
 Pipe ("|") is the 'or' validation tags deparator. If you wish to
 have a pipe included within the parameter i.e. excludesall=| you will need to
 use the UTF-8 hex representation 0x7C, which is replaced in the code as a pipe,
-so the above will become excludesall=0x7C
+so the above will become excludesall=0x7C.
 
 	type Test struct {
 		Field `validate:"excludesall=|"`    // BAD! Do not include a pipe!
@@ -685,7 +685,7 @@ to the top level struct.
 
 Only valid for Numbers, time.Duration and time.Time types, this will validate
 the field value against another fields value either within a struct or passed in
-field. usage examples are for validation of a Start and End date:
+field. Usage examples are for validation of a Start and End date:
 
 Example #1:
 
@@ -758,25 +758,25 @@ in a field of the struct specified via a parameter.
 
 # Alpha Only
 
-This validates that a string value contains ASCII alpha characters only
+This validates that a string value contains ASCII alpha characters only.
 
 	Usage: alpha
 
 # Alphanumeric
 
-This validates that a string value contains ASCII alphanumeric characters only
+This validates that a string value contains ASCII alphanumeric characters only.
 
 	Usage: alphanum
 
 # Alpha Unicode
 
-This validates that a string value contains unicode alpha characters only
+This validates that a string value contains unicode alpha characters only.
 
 	Usage: alphaunicode
 
 # Alphanumeric Unicode
 
-This validates that a string value contains unicode alphanumeric characters only
+This validates that a string value contains unicode alphanumeric characters only.
 
 	Usage: alphanumunicode
 
@@ -810,7 +810,7 @@ This validates that a string value contains a valid hexadecimal.
 # Hexcolor String
 
 This validates that a string value contains a valid hex color including
-hashtag (#)
+hashtag (#).
 
 	Usage: hexcolor
 
@@ -828,52 +828,52 @@ This validates that a string value contains only uppercase characters. An empty 
 
 # RGB String
 
-This validates that a string value contains a valid rgb color
+This validates that a string value contains a valid RGB color.
 
 	Usage: rgb
 
 # RGBA String
 
-This validates that a string value contains a valid rgba color
+This validates that a string value contains a valid RGBA color.
 
 	Usage: rgba
 
 # HSL String
 
-This validates that a string value contains a valid hsl color
+This validates that a string value contains a valid HSL color.
 
 	Usage: hsl
 
 # HSLA String
 
-This validates that a string value contains a valid hsla color
+This validates that a string value contains a valid HSLA color
 
 	Usage: hsla
 
 # E.164 Phone Number String
 
 This validates that a string value contains a valid E.164 Phone number
-https://en.wikipedia.org/wiki/E.164 (ex. +1123456789)
+https://en.wikipedia.org/wiki/E.164 (ex. +1123456789).
 
 	Usage: e164
 
 # E-mail String
 
 This validates that a string value contains a valid email
-This may not conform to all possibilities of any rfc standard, but neither
+This may not conform to all possibilities of any RFC standard, but neither
 does any email provider accept all possibilities.
 
 	Usage: email
 
 # JSON String
 
-This validates that a string value is valid JSON
+This validates that a string value is valid JSON.
 
 	Usage: json
 
 # JWT String
 
-This validates that a string value is a valid JWT
+This validates that a string value is a valid JWT.
 
 	Usage: jwt
 
@@ -889,7 +889,7 @@ This is done using os.Stat, which is a platform independent function.
 
 This validates that a string value contains a valid file path and that
 the file exists on the machine and is an image.
-This is done using os.Stat and github.com/gabriel-vasile/mimetype
+This is done using os.Stat and github.com/gabriel-vasile/mimetype.
 
 	Usage: image
 
@@ -905,14 +905,14 @@ This is done using os.Stat, which is a platform independent function.
 
 This validates that a string value contains a valid url
 This will accept any url the golang request uri accepts but must contain
-a schema for example http:// or rtmp://
+a schema for example http:// or rtmp://.
 
 	Usage: url
 
 # URI String
 
-This validates that a string value contains a valid uri
-This will accept any uri the golang request uri accepts
+This validates that a string value contains a valid URI.
+This will accept any uri the Golang request URI accepts.
 
 	Usage: uri
 
@@ -925,7 +925,7 @@ according to the RFC 2141 spec.
 
 # Base32 String
 
-This validates that a string value contains a valid bas324 value.
+This validates that a string value contains a valid base32 value.
 Although an empty string is valid base32 this will report an empty string
 as an error, if you wish to accept an empty string as valid you can use
 this with the omitempty tag.
@@ -1024,25 +1024,25 @@ This validates that a string value does not contain the supplied rune value.
 
 # Starts With
 
-This validates that a string value starts with the supplied string value
+This validates that a string value starts with the supplied string value.
 
 	Usage: startswith=hello
 
 # Ends With
 
-This validates that a string value ends with the supplied string value
+This validates that a string value ends with the supplied string value.
 
 	Usage: endswith=goodbye
 
 # Does Not Start With
 
-This validates that a string value does not start with the supplied string value
+This validates that a string value does not start with the supplied string value.
 
 	Usage: startsnotwith=hello
 
 # Does Not End With
 
-This validates that a string value does not end with the supplied string value
+This validates that a string value does not end with the supplied string value.
 
 	Usage: endsnotwith=goodbye
 
@@ -1248,13 +1248,13 @@ Note: See Go's ParseMAC for accepted formats and types:
 
 # Hostname RFC 952
 
-This validates that a string value is a valid Hostname according to RFC 952 https://tools.ietf.org/html/rfc952
+This validates that a string value is a valid Hostname according to RFC 952 https://tools.ietf.org/html/rfc952.
 
 	Usage: hostname
 
 # Hostname RFC 1123
 
-This validates that a string value is a valid Hostname according to RFC 1123 https://tools.ietf.org/html/rfc1123
+This validates that a string value is a valid Hostname according to RFC 1123 https://tools.ietf.org/html/rfc1123.
 
 	Usage: hostname_rfc1123 or if you want to continue to use 'hostname' in your tags, create an alias.
 
@@ -1267,21 +1267,21 @@ This validates that a string value contains a valid FQDN.
 # HTML Tags
 
 This validates that a string value appears to be an HTML element tag
-including those described at https://developer.mozilla.org/en-US/docs/Web/HTML/Element
+including those described at https://developer.mozilla.org/en-US/docs/Web/HTML/Element.
 
 	Usage: html
 
 # HTML Encoded
 
 This validates that a string value is a proper character reference in decimal
-or hexadecimal format
+or hexadecimal format.
 
 	Usage: html_encoded
 
 # URL Encoded
 
 This validates that a string value is percent-encoded (URL encoded) according
-to https://tools.ietf.org/html/rfc3986#section-2.1
+to https://tools.ietf.org/html/rfc3986#section-2.1.
 
 	Usage: url_encoded
 
@@ -1313,49 +1313,49 @@ can be used to validate fields typically passed to sockets and connections.
 # Datetime
 
 This validates that a string value is a valid datetime based on the supplied datetime format.
-Supplied format must match the official Go time format layout as documented in https://golang.org/pkg/time/
+Supplied format must match the official Go time format layout as documented in https://golang.org/pkg/time/.
 
 	Usage: datetime=2006-01-02
 
 # Iso3166-1 alpha-2
 
 This validates that a string value is a valid country code based on iso3166-1 alpha-2 standard.
-see: https://www.iso.org/iso-3166-country-codes.html
+see: https://www.iso.org/iso-3166-country-codes.html.
 
 	Usage: iso3166_1_alpha2
 
 # Iso3166-1 alpha-3
 
 This validates that a string value is a valid country code based on iso3166-1 alpha-3 standard.
-see: https://www.iso.org/iso-3166-country-codes.html
+see: https://www.iso.org/iso-3166-country-codes.html.
 
 	Usage: iso3166_1_alpha3
 
 # Iso3166-1 alpha-numeric
 
 This validates that a string value is a valid country code based on iso3166-1 alpha-numeric standard.
-see: https://www.iso.org/iso-3166-country-codes.html
+see: https://www.iso.org/iso-3166-country-codes.html.
 
 	Usage: iso3166_1_alpha3
 
 # BCP 47 Language Tag
 
 This validates that a string value is a valid BCP 47 language tag, as parsed by language.Parse.
-More information on https://pkg.go.dev/golang.org/x/text/language
+More information on https://pkg.go.dev/golang.org/x/text/language.
 
 	Usage: bcp47_language_tag
 
 BIC (SWIFT code)
 
 This validates that a string value is a valid Business Identifier Code (SWIFT code), defined in ISO 9362.
-More information on https://www.iso.org/standard/60390.html
+More information on https://www.iso.org/standard/60390.html.
 
 	Usage: bic
 
 # RFC 1035 label
 
 This validates that a string value is a valid dns RFC 1035 label, defined in RFC 1035.
-More information on https://datatracker.ietf.org/doc/html/rfc1035
+More information on https://datatracker.ietf.org/doc/html/rfc1035.
 
 	Usage: dns_rfc1035_label
 
@@ -1363,21 +1363,21 @@ More information on https://datatracker.ietf.org/doc/html/rfc1035
 
 This validates that a string value is a valid time zone based on the time zone database present on the system.
 Although empty value and Local value are allowed by time.LoadLocation golang function, they are not allowed by this validator.
-More information on https://golang.org/pkg/time/#LoadLocation
+More information on https://golang.org/pkg/time/#LoadLocation.
 
 	Usage: timezone
 
 # Semantic Version
 
 This validates that a string value is a valid semver version, defined in Semantic Versioning 2.0.0.
-More information on https://semver.org/
+More information on https://semver.org/.
 
 	Usage: semver
 
 # CVE Identifier
 
 This validates that a string value is a valid cve id, defined in cve mitre.
-More information on https://cve.mitre.org/
+More information on https://cve.mitre.org/.
 
 	Usage: cve
 
