@@ -8698,66 +8698,92 @@ func TestRgb(t *testing.T) {
 func TestEmail(t *testing.T) {
 	validate := New()
 
-	s := "test@mail.com"
-	errs := validate.Var(s, "email")
-	Equal(t, errs, nil)
+	tests := []struct {
+		input       string
+		expectError bool
+	}{
+		{
+			input:       "test@mail.com",
+			expectError: false,
+		},
+		{
+			input:       "Dörte@Sörensen.example.com",
+			expectError: false,
+		},
+		{
+			input:       "θσερ@εχαμπλε.ψομ",
+			expectError: false,
+		},
+		{
+			input:       "юзер@екзампл.ком",
+			expectError: false,
+		},
+		{
+			input:       "उपयोगकर्ता@उदाहरण.कॉम",
+			expectError: false,
+		},
+		{
+			input:       "用户@例子.广告",
+			expectError: false,
+		},
+		{
+			input:       "test@xn--t8jx73hngb.xn--tckwe",
+			expectError: false,
+		},
+		{
+			input:       "test@test.xn--11b4c3d",
+			expectError: false,
+		},
+		{
+			input:       "mail@domain_with_underscores.org",
+			expectError: true,
+		},
+		{
+			// empty is not a valid email
+			input:       "",
+			expectError: true,
+		},
+		{
+			input:       "test@email",
+			expectError: true,
+		},
+		{
+			input:       "test@email.",
+			expectError: true,
+		},
+		{
+			input:       "@email.com",
+			expectError: true,
+		},
+		{
+			input:       `"test test"@email.com`,
+			expectError: false,
+		},
+		{
+			input:       `"@email.com`,
+			expectError: true,
+		},
+		{
+			// per RFC 952, TLD can contain number, but there is no valid TLD as of June 2024 that ends with number.
+			input:       `example@email.com1`,
+			expectError: true,
+		},
+	}
 
-	s = "Dörte@Sörensen.example.com"
-	errs = validate.Var(s, "email")
-	Equal(t, errs, nil)
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("Email: %s", test.input), func(t *testing.T) {
+			errs := validate.Var(test.input, "email")
+			if test.expectError {
+				AssertError(t, errs, "", "", "", "", "email")
+			} else {
+				Equal(t, errs, nil)
+			}
+		})
+	}
 
-	s = "θσερ@εχαμπλε.ψομ"
-	errs = validate.Var(s, "email")
-	Equal(t, errs, nil)
-
-	s = "юзер@екзампл.ком"
-	errs = validate.Var(s, "email")
-	Equal(t, errs, nil)
-
-	s = "उपयोगकर्ता@उदाहरण.कॉम"
-	errs = validate.Var(s, "email")
-	Equal(t, errs, nil)
-
-	s = "用户@例子.广告"
-	errs = validate.Var(s, "email")
-	Equal(t, errs, nil)
-
-	s = "mail@domain_with_underscores.org"
-	errs = validate.Var(s, "email")
-	NotEqual(t, errs, nil)
-	AssertError(t, errs, "", "", "", "", "email")
-
-	s = ""
-	errs = validate.Var(s, "email")
-	NotEqual(t, errs, nil)
-	AssertError(t, errs, "", "", "", "", "email")
-
-	s = "test@email"
-	errs = validate.Var(s, "email")
-	NotEqual(t, errs, nil)
-	AssertError(t, errs, "", "", "", "", "email")
-
-	s = "test@email."
-	errs = validate.Var(s, "email")
-	NotEqual(t, errs, nil)
-	AssertError(t, errs, "", "", "", "", "email")
-
-	s = "@email.com"
-	errs = validate.Var(s, "email")
-	NotEqual(t, errs, nil)
-	AssertError(t, errs, "", "", "", "", "email")
-
-	s = `"test test"@email.com`
-	errs = validate.Var(s, "email")
-	Equal(t, errs, nil)
-
-	s = `"@email.com`
-	errs = validate.Var(s, "email")
-	NotEqual(t, errs, nil)
-	AssertError(t, errs, "", "", "", "", "email")
-
+	// boolean is not a valid email
 	i := true
-	errs = validate.Var(i, "email")
+	errs := validate.Var(i, "email")
 	NotEqual(t, errs, nil)
 	AssertError(t, errs, "", "", "", "", "email")
 }
