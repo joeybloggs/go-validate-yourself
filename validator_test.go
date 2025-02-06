@@ -13461,6 +13461,116 @@ func TestValidate_ValidateMapCtx(t *testing.T) {
 			},
 			want: 1,
 		},
+
+		{
+			name: "test map with field reference",
+			args: args{
+				data: map[string]interface{}{
+					"Field_A": "Value_A",
+					"Field_B": "Value_A",
+				},
+				rules: map[string]interface{}{
+					"Field_A": "required",
+					"Field_B": "required,eqfield=[Field_A]",
+				},
+			},
+			want: 0,
+		},
+
+		{
+			name: "test map with field+value reference (fail)",
+			args: args{
+				data: map[string]interface{}{
+					"Field_A": "Value_A",
+					"Field_B": "",
+				},
+				rules: map[string]interface{}{
+					"Field_A": "required",
+					"Field_B": "required_if=[Field_A] Value_A",
+				},
+			},
+			want: 1,
+		},
+
+		{
+			name: "test map with field+value reference (success)",
+			args: args{
+				data: map[string]interface{}{
+					"Field_A": "Value_A",
+					"Field_B": "not empty",
+				},
+				rules: map[string]interface{}{
+					"Field_A": "required",
+					"Field_B": "required_if=[Field_A] Value_A",
+				},
+			},
+			want: 0,
+		},
+
+		{
+			name: "test nested map in slice field falidation (success)",
+			args: args{
+				data: map[string]interface{}{
+					"Test_A": map[string]interface{}{
+						"Test_B": "SomethingEqual",
+						"Test_C": []map[string]interface{}{
+							{
+								"Test_D": "SomethingEqual",
+							},
+						},
+					},
+				},
+				rules: map[string]interface{}{
+					"Test_A": map[string]interface{}{
+						"Test_B": "required",
+						"Test_C": map[string]interface{}{
+							"Test_D": "eqfield=[Test_A].[Test_B]",
+						},
+					},
+				},
+			},
+			want: 0,
+		},
+
+		{
+			name: "test nested map in slice field falidation (fail)",
+			args: args{
+				data: map[string]interface{}{
+					"Test_A": map[string]interface{}{
+						"Test_B": "SomethingEqual",
+						"Test_C": []map[string]interface{}{
+							{
+								"Test_D": "SomethingDifferent",
+							},
+						},
+					},
+				},
+				rules: map[string]interface{}{
+					"Test_A": map[string]interface{}{
+						"Test_B": "required",
+						"Test_C": map[string]interface{}{
+							"Test_D": "eqfield=[Test_A].[Test_B]",
+						},
+					},
+				},
+			},
+			want: 1,
+		},
+
+		{
+			name: "test map with field+value reference - no brackets (fail)",
+			args: args{
+				data: map[string]interface{}{
+					"Field_A": "Value_A",
+					"Field_B": "",
+				},
+				rules: map[string]interface{}{
+					"Field_A": "required",
+					"Field_B": "required_if=Field_A Value_A",
+				},
+			},
+			want: 1,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

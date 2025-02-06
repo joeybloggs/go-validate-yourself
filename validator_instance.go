@@ -163,17 +163,22 @@ func (v *Validate) SetTagName(name string) {
 // ValidateMapCtx validates a map using a map of validation rules and allows passing of contextual
 // validation information via context.Context.
 func (v Validate) ValidateMapCtx(ctx context.Context, data map[string]interface{}, rules map[string]interface{}) map[string]interface{} {
+	return v.validateMapCtx(ctx, data, data, rules)
+}
+
+// validateMapCtx will track the original "root" map (in case of nesting) which will allow for Field reference validation
+func (v Validate) validateMapCtx(ctx context.Context, root map[string]interface{}, data map[string]interface{}, rules map[string]interface{}) map[string]interface{} {
 	errs := make(map[string]interface{})
 	for field, rule := range rules {
 		if ruleObj, ok := rule.(map[string]interface{}); ok {
 			if dataObj, ok := data[field].(map[string]interface{}); ok {
-				err := v.ValidateMapCtx(ctx, dataObj, ruleObj)
+				err := v.validateMapCtx(ctx, root, dataObj, ruleObj)
 				if len(err) > 0 {
 					errs[field] = err
 				}
 			} else if dataObjs, ok := data[field].([]map[string]interface{}); ok {
 				for _, obj := range dataObjs {
-					err := v.ValidateMapCtx(ctx, obj, ruleObj)
+					err := v.validateMapCtx(ctx, root, obj, ruleObj)
 					if len(err) > 0 {
 						errs[field] = err
 					}
@@ -182,7 +187,7 @@ func (v Validate) ValidateMapCtx(ctx context.Context, data map[string]interface{
 				errs[field] = errors.New("The field: '" + field + "' is not a map to dive")
 			}
 		} else if ruleStr, ok := rule.(string); ok {
-			err := v.VarCtx(ctx, data[field], ruleStr)
+			err := v.VarCtxMap(ctx, field, root, data[field], ruleStr)
 			if err != nil {
 				errs[field] = err
 			}
@@ -648,6 +653,35 @@ func (v *Validate) VarCtx(ctx context.Context, field interface{}, tag string) (e
 	vd.top = val
 	vd.isPartial = false
 	vd.traverseField(ctx, val, val, vd.ns[0:0], vd.actualNs[0:0], defaultCField, ctag)
+
+	if len(vd.errs) > 0 {
+		err = vd.errs
+		vd.errs = nil
+	}
+	v.pool.Put(vd)
+	return
+}
+
+// VarCtxMap validates a single variable (in a map) using tag style validation and allows passing of contextual
+// validation information via context.Context. This allow usage of "Field" validations via ValidateMap() by using
+// map lookup format "eqfield=[AnotherMapKey] AnotherMapKeyValue" and "required_if=[AnotherMapKey] AnotherMapKeyValue"
+//
+// It returns InvalidValidationError for bad values passed in and nil or ValidationErrors as error otherwise.
+// You will need to assert the error if it's not nil eg. err.(validator.ValidationErrors) to access the array of errors.
+// validate Array, Slice and maps fields which may contain more than one error
+func (v *Validate) VarCtxMap(ctx context.Context, key string, parent interface{}, field interface{}, tag string) (err error) {
+	if len(tag) == 0 || tag == skipValidationTag {
+		return nil
+	}
+
+	ctag := v.fetchCacheTag(tag)
+
+	val := reflect.ValueOf(field)
+	vd := v.pool.Get().(*validate)
+	vd.top = val
+	vd.isPartial = false
+
+	vd.traverseField(ctx, reflect.ValueOf(parent), val, vd.ns[0:0], vd.actualNs[0:0], &cField{altName: key}, ctag)
 
 	if len(vd.errs) > 0 {
 		err = vd.errs
